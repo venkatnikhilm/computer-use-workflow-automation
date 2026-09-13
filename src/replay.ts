@@ -1,6 +1,10 @@
 import { Capability, Input, RunError } from "./contracts.js";
-import { Surface } from "./browser.js";
-export async function replay(raw: unknown, args: unknown, surface: Surface) {
+import type { ExecutionSurface } from "./surface.js";
+export async function replay(
+  raw: unknown,
+  args: unknown,
+  surface: ExecutionSurface,
+) {
   const parsedCapability = Capability.safeParse(raw);
   const parsedInput = Input.safeParse(args);
   if (!parsedCapability.success || !parsedInput.success) {
@@ -40,15 +44,9 @@ export async function replay(raw: unknown, args: unknown, surface: Surface) {
           error instanceof RunError &&
           ["TARGET_NOT_FOUND", "TARGET_NOT_ACTIONABLE"].includes(error.code)
         ) {
-          await surface.intervene(error.code, async () => {
-            const target = surface.locator(action.target);
-            return (
-              surface.allowed(surface.page.url()) &&
-              (await target.count()) === 1 &&
-              (await target.isVisible()) &&
-              (await target.isEnabled())
-            );
-          });
+          await surface.intervene(error.code, () =>
+            surface.canResumeAction(action),
+          );
           await surface.act(action, input);
         } else throw error;
       }
@@ -59,7 +57,7 @@ export async function replay(raw: unknown, args: unknown, surface: Surface) {
     }
     let outputs;
     try {
-      outputs = await surface.complete(input);
+      outputs = await surface.complete(input, capability.extraction);
     } catch (error) {
       if (
         surface.session.interactive &&
@@ -68,13 +66,13 @@ export async function replay(raw: unknown, args: unknown, surface: Surface) {
       ) {
         await surface.intervene(error.code, async () => {
           try {
-            await surface.verifyOutput(input);
+            await surface.verifyOutput(input, capability.extraction);
             return true;
           } catch {
             return false;
           }
         });
-        outputs = await surface.complete(input);
+        outputs = await surface.complete(input, capability.extraction);
       } else throw error;
     }
     surface.events.emit("success", {

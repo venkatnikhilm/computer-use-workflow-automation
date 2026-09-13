@@ -7,10 +7,24 @@ export const Target = z.discriminatedUnion("by", [
     .object({
       by: z.literal("role"),
       value: targetValue,
-      role: z.enum(["button", "link", "heading"]),
+      role: z.enum(["button", "link", "heading", "textbox"]),
     })
     .strict(),
 ]);
+export const Extraction = z
+  .object({
+    member: Target,
+    account_kind: Target,
+    balance: Target,
+    currency: Target,
+  })
+  .strict();
+export const defaultExtraction = Extraction.parse({
+  member: { by: "css", value: "#member-id" },
+  account_kind: { by: "css", value: "#account-kind" },
+  balance: { by: "css", value: "#balance" },
+  currency: { by: "css", value: "#currency" },
+});
 export const Step = z
   .object({
     action: z.enum(["fill", "click"]),
@@ -38,7 +52,7 @@ export const Capability = z
   .object({
     schema_version: z.literal(1),
     id: z.literal("get_savings_balance"),
-    version: z.literal(1),
+    version: z.number().int().positive(),
     application: z.literal("bank-demo-v1"),
     inputs: z.object({ member_id: z.literal("string:5-digits") }).strict(),
     outputs: z
@@ -47,6 +61,7 @@ export const Capability = z
         currency: z.literal("ISO-4217"),
       })
       .strict(),
+    extraction: Extraction.default(defaultExtraction),
     steps: z.array(Step).min(3).max(20),
     completion: z.literal("member-and-savings-identity"),
     handler_profile: z.literal("bank-conditions-v1"),
@@ -54,6 +69,11 @@ export const Capability = z
       .object({
         kind: z.enum(["llm-discovery", "development-fixture"]),
         run_id: z.string().uuid(),
+        model: z
+          .string()
+          .regex(/^gemini-[a-z0-9.-]+$/)
+          .optional(),
+        api_attempts: z.number().int().min(1).max(20).optional(),
       })
       .strict(),
   })

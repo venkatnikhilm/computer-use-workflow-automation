@@ -217,7 +217,7 @@ test("discovery wiring with mocked provider generates a parameterized artifact (
   const oldModel = process.env.GEMINI_MODEL;
   let calls = 0;
   process.env.GEMINI_API_KEY = "mock-only";
-  process.env.GEMINI_MODEL = "mock-only";
+  process.env.GEMINI_MODEL = "gemini-mock-only";
   globalThis.fetch = async () =>
     new Response(
       JSON.stringify({
@@ -361,6 +361,43 @@ test("business outcomes are scoped to the requested member and correct screen", 
     await assert.rejects(
       () => surface.conditions({ member_id: "12345" }),
       /IDENTITY_MISMATCH/,
+    );
+  } finally {
+    await surface.close();
+    await new Promise<void>((r) => server.close(() => r()));
+  }
+});
+
+test("output extraction follows artifact descriptors and refuses ambiguous output targets", async () => {
+  const server = await startDemo(0);
+  const a = server.address();
+  assert(a && typeof a !== "string");
+  const events = new Events("evidence/development");
+  const surface = new Surface(
+    `http://127.0.0.1:${a.port}`,
+    events,
+    new Session(events, false),
+  );
+  try {
+    await surface.open();
+    await replay(fixture, { member_id: "12345" }, surface);
+    await surface.page
+      .locator("#balance")
+      .evaluate((el) => (el.id = "available-savings-balance"));
+    const extraction = {
+      ...Capability.parse(fixture).extraction,
+      balance: { by: "css" as const, value: "#available-savings-balance" },
+    };
+    assert.deepEqual(
+      await surface.complete({ member_id: "12345" }, extraction),
+      { balance: "100.00", currency: "USD" },
+    );
+    await surface.page
+      .locator("#available-savings-balance")
+      .evaluate((el) => el.after(el.cloneNode(true)));
+    await assert.rejects(
+      () => surface.complete({ member_id: "12345" }, extraction),
+      /OUTPUT_TARGET_INVALID/,
     );
   } finally {
     await surface.close();

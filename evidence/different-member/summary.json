@@ -1,0 +1,9 @@
+{
+  "scenario": "different-member",
+  "artifact_sha256": "9aa764a60409c0b50c947ebd4111f4f5e91d72d988bf900efc89a21e44e58e97",
+  "run_id": "a39764c7-ea9f-4289-959c-738bd0efb523",
+  "status": "success",
+  "model_calls": 0,
+  "output_checked": true,
+  "operator": "none"
+}

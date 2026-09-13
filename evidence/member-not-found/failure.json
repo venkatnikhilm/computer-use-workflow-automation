@@ -1,0 +1,12 @@
+{
+  "tags": [
+    {
+      "tag": "H1",
+      "role": null
+    },
+    {
+      "tag": "P",
+      "role": "status"
+    }
+  ]
+}

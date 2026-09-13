@@ -1,0 +1,10 @@
+{
+  "scenario": "member-not-found",
+  "artifact_sha256": "9aa764a60409c0b50c947ebd4111f4f5e91d72d988bf900efc89a21e44e58e97",
+  "run_id": "a3f460f9-c11e-44eb-9e66-3e703ec39634",
+  "status": "business_outcome",
+  "code": "MEMBER_NOT_FOUND",
+  "model_calls": 0,
+  "output_checked": false,
+  "operator": "none"
+}

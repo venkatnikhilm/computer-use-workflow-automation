@@ -1,0 +1,77 @@
+{
+  "artifact_sha256": "9aa764a60409c0b50c947ebd4111f4f5e91d72d988bf900efc89a21e44e58e97",
+  "discovery": {
+    "run_id": "cbb2b126-b34c-46b5-93fc-761c24c16580",
+    "kind": "live-model",
+    "api_attempts": 5
+  },
+  "replays": [
+    {
+      "scenario": "different-member",
+      "artifact_sha256": "9aa764a60409c0b50c947ebd4111f4f5e91d72d988bf900efc89a21e44e58e97",
+      "run_id": "a39764c7-ea9f-4289-959c-738bd0efb523",
+      "status": "success",
+      "model_calls": 0,
+      "output_checked": true,
+      "operator": "none"
+    },
+    {
+      "scenario": "member-not-found",
+      "artifact_sha256": "9aa764a60409c0b50c947ebd4111f4f5e91d72d988bf900efc89a21e44e58e97",
+      "run_id": "a3f460f9-c11e-44eb-9e66-3e703ec39634",
+      "status": "business_outcome",
+      "code": "MEMBER_NOT_FOUND",
+      "model_calls": 0,
+      "output_checked": false,
+      "operator": "none"
+    },
+    {
+      "scenario": "no-savings",
+      "artifact_sha256": "9aa764a60409c0b50c947ebd4111f4f5e91d72d988bf900efc89a21e44e58e97",
+      "run_id": "abcc0bfe-ea98-4a03-9ed7-3856df91ec2d",
+      "status": "business_outcome",
+      "code": "NO_SAVINGS_ACCOUNT",
+      "model_calls": 0,
+      "output_checked": false,
+      "operator": "none"
+    },
+    {
+      "scenario": "ambiguous-account",
+      "artifact_sha256": "9aa764a60409c0b50c947ebd4111f4f5e91d72d988bf900efc89a21e44e58e97",
+      "run_id": "acdebdd9-afa1-4dbb-a8db-63ca66ef9eb7",
+      "status": "business_outcome",
+      "code": "AMBIGUOUS_ACCOUNT",
+      "model_calls": 0,
+      "output_checked": false,
+      "operator": "none"
+    },
+    {
+      "scenario": "slow-load",
+      "artifact_sha256": "9aa764a60409c0b50c947ebd4111f4f5e91d72d988bf900efc89a21e44e58e97",
+      "run_id": "07eb23d3-e662-4825-84eb-c944e03fff25",
+      "status": "success",
+      "model_calls": 0,
+      "output_checked": true,
+      "operator": "none"
+    },
+    {
+      "scenario": "unknown-state",
+      "artifact_sha256": "9aa764a60409c0b50c947ebd4111f4f5e91d72d988bf900efc89a21e44e58e97",
+      "run_id": "c6899137-5f97-4b09-b84a-e5bf17b9213f",
+      "status": "failure",
+      "code": "COMPLETION_NOT_MET",
+      "model_calls": 0,
+      "output_checked": false,
+      "operator": "none"
+    },
+    {
+      "scenario": "simulated-handoff",
+      "artifact_sha256": "9aa764a60409c0b50c947ebd4111f4f5e91d72d988bf900efc89a21e44e58e97",
+      "run_id": "5a9f8522-b9d4-40f9-b136-144e42e743f5",
+      "status": "success",
+      "model_calls": 0,
+      "output_checked": true,
+      "operator": "simulated"
+    }
+  ]
+}

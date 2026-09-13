@@ -1,0 +1,99 @@
+{
+  "schema_version": 1,
+  "id": "get_savings_balance",
+  "version": 1,
+  "application": "bank-demo-v1",
+  "inputs": {
+    "member_id": "string:5-digits"
+  },
+  "outputs": {
+    "balance": "decimal-string",
+    "currency": "ISO-4217"
+  },
+  "extraction": {
+    "member": {
+      "by": "css",
+      "value": "#member-id"
+    },
+    "account_kind": {
+      "by": "css",
+      "value": "#account-kind"
+    },
+    "balance": {
+      "by": "css",
+      "value": "#balance"
+    },
+    "currency": {
+      "by": "css",
+      "value": "#currency"
+    }
+  },
+  "steps": [
+    {
+      "action": "click",
+      "target": {
+        "by": "role",
+        "value": "Members",
+        "role": "link"
+      },
+      "postcondition": {
+        "kind": "path",
+        "value": "/members"
+      }
+    },
+    {
+      "action": "fill",
+      "target": {
+        "by": "label",
+        "value": "Member ID"
+      },
+      "input": "member_id",
+      "postcondition": {
+        "kind": "field_equals_input",
+        "input": "member_id"
+      }
+    },
+    {
+      "action": "click",
+      "target": {
+        "by": "role",
+        "value": "Search",
+        "role": "button"
+      },
+      "postcondition": {
+        "kind": "path",
+        "value": "/results"
+      }
+    },
+    {
+      "action": "click",
+      "target": {
+        "by": "role",
+        "value": "Open member",
+        "role": "link"
+      },
+      "postcondition": {
+        "kind": "path",
+        "value": "/member"
+      }
+    },
+    {
+      "action": "click",
+      "target": {
+        "by": "role",
+        "value": "Savings",
+        "role": "link"
+      },
+      "postcondition": {
+        "kind": "path",
+        "value": "/account"
+      }
+    }
+  ],
+  "completion": "member-and-savings-identity",
+  "handler_profile": "bank-conditions-v1",
+  "provenance": {
+    "kind": "llm-discovery",
+    "run_id": "cbb2b126-b34c-46b5-93fc-761c24c16580"
+  }
+}

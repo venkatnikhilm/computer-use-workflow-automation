@@ -46,5 +46,5 @@ export async function startDemo(port = 4173, scenario = "normal") {
 }
 if (import.meta.url === pathToFileURL(process.argv[1]).href) {
   await startDemo(Number(process.env.PORT ?? 4173), process.env.SCENARIO);
-  console.log("Demo: http://127.0.0.1:4173");
+  console.log(`Demo: http://127.0.0.1:${process.env.PORT ?? 4173}`);
 }

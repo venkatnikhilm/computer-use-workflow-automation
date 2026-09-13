@@ -16,6 +16,7 @@ export class Events {
       action?: string;
       assisted?: boolean;
       model_calls?: number;
+      schema_errors?: { code: string; path: string }[];
       http_status?: number;
       wait_ms?: number;
       quota_scope?: "per_minute" | "per_day" | "mixed" | "unknown";

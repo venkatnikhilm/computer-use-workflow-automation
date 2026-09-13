@@ -26,7 +26,8 @@ try {
   if (mode === "discover") {
     const { discover } = await import("./discovery.js");
     const artifact = await discover(
-      "Find the requested member and return their current savings balance and currency.",
+      process.env.GOAL ??
+        "Find the requested member and return their current savings balance and currency.",
       { member_id },
       surface,
     );

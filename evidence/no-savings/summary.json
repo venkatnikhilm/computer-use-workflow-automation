@@ -1,0 +1,10 @@
+{
+  "scenario": "no-savings",
+  "artifact_sha256": "9aa764a60409c0b50c947ebd4111f4f5e91d72d988bf900efc89a21e44e58e97",
+  "run_id": "abcc0bfe-ea98-4a03-9ed7-3856df91ec2d",
+  "status": "business_outcome",
+  "code": "NO_SAVINGS_ACCOUNT",
+  "model_calls": 0,
+  "output_checked": false,
+  "operator": "none"
+}

@@ -9,5 +9,5 @@
     "lib": ["ES2022", "DOM"],
     "types": ["node"]
   },
-  "include": ["src", "demo", "tests"]
+  "include": ["src", "demo", "tests", "scripts"]
 }

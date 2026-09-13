@@ -4,13 +4,15 @@ import { RunError } from "./contracts.js";
 import { Events } from "./events.js";
 export class Session {
   operatorURL = "";
-  owner: "automation" | "human" | "validating" = "automation";
+  owner: "automation" | "human" | "validating" | "terminal" = "automation";
+  step = 0;
   assisted = false;
   intervention = "";
   server?: Server;
   constructor(
     readonly events: Events,
     readonly interactive: boolean,
+    readonly timeoutMs = 120000,
   ) {}
   assertAutomation() {
     if (this.owner !== "automation") throw new RunError("CONTROL_NOT_OWNED");
@@ -27,13 +29,14 @@ export class Session {
       const end = (error?: Error) => {
         if (settled) return;
         settled = true;
+        if (error) this.owner = "terminal";
         clearTimeout(timer);
         this.server?.close();
         error ? reject(error) : resolve();
       };
       const timer = setTimeout(
         () => end(new RunError("INTERVENTION_TIMEOUT")),
-        120000,
+        this.timeoutMs,
       );
       this.server = createServer(async (req, res) => {
         if (req.url !== `/${token}`) {
@@ -43,8 +46,10 @@ export class Session {
         }
         if (req.method === "GET") {
           res.setHeader("Content-Type", "text/html");
+          res.setHeader("Cache-Control", "no-store");
+          res.setHeader("Referrer-Policy", "no-referrer");
           res.end(
-            `<h1>Browser intervention</h1><p>${code}</p><p>Operate the existing banking browser, then resume.</p><form method="POST"><button name="action" value="resume">Resume</button><button name="action" value="cancel">Cancel</button></form>`,
+            `<h1>Browser intervention</h1><p>Capability: get_savings_balance</p><p>Run: ${this.events.id} · Step: ${this.step}</p><p>${code}</p><p>Operate the existing banking browser, then resume.</p><form method="POST"><button name="action" value="resume">Resume</button><button name="action" value="cancel">Cancel</button></form>`,
           );
           return;
         }
@@ -62,7 +67,7 @@ export class Session {
             return;
           }
         }
-        if (this.owner !== "human") {
+        if (settled || this.owner !== "human") {
           res.writeHead(409);
           res.end();
           return;
@@ -79,7 +84,13 @@ export class Session {
         }
         this.owner = "validating";
         try {
-          if (!(await validate())) {
+          const valid = await validate();
+          if (settled) {
+            res.writeHead(409);
+            res.end("Intervention ended");
+            return;
+          }
+          if (!valid) {
             this.owner = "human";
             res.writeHead(409);
             res.end(

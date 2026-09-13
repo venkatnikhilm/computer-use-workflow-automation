@@ -1,10 +1,17 @@
 import { chromium, Browser, Page, Locator } from "playwright";
-import { RunError, StepType, Target } from "./contracts.js";
+import {
+  RunError,
+  StepType,
+  Target,
+  Extraction,
+  defaultExtraction,
+} from "./contracts.js";
 import { z } from "zod";
 import { Events } from "./events.js";
 import { Session } from "./session.js";
 import { Policy, defaultPolicy } from "./policy.js";
-export class Surface {
+import type { ExecutionSurface } from "./surface.js";
+export class Surface implements ExecutionSurface {
   browser!: Browser;
   page!: Page;
   violation = false;
@@ -120,6 +127,8 @@ export class Surface {
         .getByRole("heading", { name: "Session expired", exact: true })
         .count()
     ) {
+      this.session.step = this.stepIndex;
+      await this.evidence();
       await this.session.handoff(
         "AUTH_REQUIRED",
         async () =>
@@ -249,24 +258,38 @@ export class Surface {
       ...(step.action === "fill" ? { input: "member_id" as const } : {}),
     };
   }
-  async complete(input: { member_id: string }) {
+  async complete(input: { member_id: string }, extraction = defaultExtraction) {
     await this.conditions(input);
-    return this.verifyOutput(input);
+    return this.verifyOutput(input, extraction);
   }
-  async verifyOutput(input: { member_id: string }) {
+  async verifyOutput(
+    input: { member_id: string },
+    extraction = defaultExtraction,
+  ) {
+    Extraction.parse(extraction);
     if (this.violation || !this.allowed(this.page.url()))
       throw new RunError("POLICY_BLOCKED");
     await this.identity();
-    if ((await this.page.locator("#account-kind").count()) !== 1)
+    if ((await this.locator(extraction.account_kind).count()) !== 1)
       throw new RunError("COMPLETION_NOT_MET");
     if (
-      (await this.page.locator("#member-id").textContent()) !==
+      (await this.locator(extraction.member).textContent()) !==
         input.member_id ||
-      (await this.page.locator("#account-kind").textContent()) !== "savings"
+      (await this.locator(extraction.account_kind).textContent()) !== "savings"
     )
       throw new RunError("IDENTITY_MISMATCH");
-    const balance = await this.page.locator("#balance").textContent();
-    const currency = await this.page.locator("#currency").textContent();
+    for (const target of [
+      extraction.member,
+      extraction.account_kind,
+      extraction.balance,
+      extraction.currency,
+    ]) {
+      const locator = this.locator(target);
+      if ((await locator.count()) !== 1 || !(await locator.isVisible()))
+        throw new RunError("OUTPUT_TARGET_INVALID");
+    }
+    const balance = await this.locator(extraction.balance).textContent();
+    const currency = await this.locator(extraction.currency).textContent();
     if (
       !balance ||
       !/^[-]?\d+\.\d{2}$/.test(balance) ||
@@ -276,8 +299,19 @@ export class Surface {
       throw new RunError("INVALID_OUTPUT");
     return { balance, currency };
   }
+  async canResumeAction(step: StepType) {
+    const target = this.locator(step.target);
+    return (
+      !this.violation &&
+      this.allowed(this.page.url()) &&
+      (await target.count()) === 1 &&
+      (await target.isVisible()) &&
+      (await target.isEnabled())
+    );
+  }
   async intervene(code: string, validate: () => Promise<boolean>) {
     await this.evidence();
+    this.session.step = this.stepIndex;
     await this.session.handoff(code, validate);
     this.check();
   }

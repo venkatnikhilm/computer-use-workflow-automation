@@ -1,0 +1,9 @@
+{
+  "scenario": "simulated-handoff",
+  "artifact_sha256": "9aa764a60409c0b50c947ebd4111f4f5e91d72d988bf900efc89a21e44e58e97",
+  "run_id": "5a9f8522-b9d4-40f9-b136-144e42e743f5",
+  "status": "success",
+  "model_calls": 0,
+  "output_checked": true,
+  "operator": "simulated"
+}

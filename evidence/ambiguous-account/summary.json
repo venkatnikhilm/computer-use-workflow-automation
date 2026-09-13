@@ -1,0 +1,10 @@
+{
+  "scenario": "ambiguous-account",
+  "artifact_sha256": "9aa764a60409c0b50c947ebd4111f4f5e91d72d988bf900efc89a21e44e58e97",
+  "run_id": "acdebdd9-afa1-4dbb-a8db-63ca66ef9eb7",
+  "status": "business_outcome",
+  "code": "AMBIGUOUS_ACCOUNT",
+  "model_calls": 0,
+  "output_checked": false,
+  "operator": "none"
+}
