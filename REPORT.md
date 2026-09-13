@@ -12,7 +12,7 @@ Current schema is intentionally limited to the banking lookup. Conditions/extrac
 
 # Determinism & error handling
 
-Replay uses exact labels, roles, or CSS; it requires a single visible enabled match. Clicks wait for navigation within a finite timeout, and fills verify the resulting value. Final validation checks member identity, savings account kind, decimal formatting, and supported currency. Missing member, missing savings account, and multiple savings accounts are business outcomes. Slow navigation is covered by bounded waiting. There are no blind action retries or model repairs.
+Replay uses exact labels, roles, or CSS; it requires a single visible enabled match. Clicks wait for navigation within a finite timeout, and fills verify the resulting value. Final validation checks member identity, savings account kind, decimal formatting, and supported currency. Missing member, missing savings account, and multiple savings accounts are business outcomes. Slow navigation is covered by bounded waiting. There are no blind action retries or model repairs. Discovery separately limits total API dispatches (six by default), spaces them by at least 15 seconds, and disables provider retries by default. HTTP 429 stops immediately; sanitized diagnostics distinguish a quota scope only when provider details support it. Tests use mocked responses and fake time for these controls.
 
 Tests execute real Chromium and verify different inputs, expected business outcomes, unknown-state failure, policy rejection, output exclusion from logs, and session takeover. Development evidence is explicitly labelled; genuine model evidence remains pending: the configured free-tier key passed a small request, but discovery received HTTP 503 even after bounded retries.
 

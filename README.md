@@ -45,6 +45,16 @@ npm run replay -- 67890 capabilities/savings.json
 
 The model sees current synthetic page observations and chooses the controls. It is not given a prewritten action sequence. Successful actions become the artifact; final account/member identity and output validation are authored application checks. Live discovery has been attempted but has not completed successfully (provider HTTP 503). Do not label development fixtures as discovery evidence.
 
+## Model request controls
+
+No live model requests are part of `npm test`. Tests inject mocked responses and a fake clock; the integration test also mocks the provider.
+
+Defaults are six total dispatched requests per discovery run, at least 15 seconds between request starts, zero automatic retries, and a 30-second timeout per request including reading its body. Optional retries for HTTP 502/503/504 consume the same total budget and obey pacing. HTTP 429 stops immediately and is never automatically retried. Transport failures stop as well. Pacing happens before the request timeout starts.
+
+Configure `MODEL_MAX_CALLS`, `MODEL_MIN_INTERVAL_MS`, `MODEL_MAX_RETRIES`, and `MODEL_TIMEOUT_MS` in `.env`. These are **per-process/run safeguards**, not a project-wide quota tracker: restarting or running multiple processes creates independent budgets. Fifteen seconds is a conservative starting interval, not a claim that it matches your account's rate limit. Check AI Studio before another live attempt.
+
+Events count every dispatch, including failures and retries. Rate-limit diagnostics retain only HTTP status, a derived quota scope (`per_minute`, `per_day`, `mixed`, or `unknown`), and a bounded retry delay when available. Raw provider messages, quota IDs, project identifiers and credentials are discarded. `MODEL_RATE_LIMITED` does not assert that the daily quota is exhausted. Older logs with `FREE_QUOTA_EXHAUSTED` used an overly broad classification and cannot establish which limit was reached.
+
 ## Human takeover
 
 Stop the demo server, then restart it with an authentication blocker:

@@ -214,6 +214,8 @@ test("discovery wiring with mocked provider generates a parameterized artifact (
     events,
     new Session(events, false),
   );
+  const oldInterval = process.env.MODEL_MIN_INTERVAL_MS;
+  process.env.MODEL_MIN_INTERVAL_MS = "0";
   const oldFetch = globalThis.fetch;
   const oldKey = process.env.GEMINI_API_KEY;
   const oldModel = process.env.GEMINI_MODEL;
@@ -257,6 +259,8 @@ test("discovery wiring with mocked provider generates a parameterized artifact (
     assert.equal(result.status, "success");
   } finally {
     globalThis.fetch = oldFetch;
+    if (oldInterval === undefined) delete process.env.MODEL_MIN_INTERVAL_MS;
+    else process.env.MODEL_MIN_INTERVAL_MS = oldInterval;
     if (oldKey === undefined) delete process.env.GEMINI_API_KEY;
     else process.env.GEMINI_API_KEY = oldKey;
     if (oldModel === undefined) delete process.env.GEMINI_MODEL;

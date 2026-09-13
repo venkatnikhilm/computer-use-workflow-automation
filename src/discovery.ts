@@ -1,18 +1,7 @@
 import { z } from "zod";
 import { Capability, Input, Step, RunError } from "./contracts.js";
 import { Surface } from "./browser.js";
-async function modelRequest(
-  url: string,
-  options: RequestInit,
-): Promise<Response> {
-  for (let attempt = 0; attempt < 3; attempt++) {
-    const response = await fetch(url, options);
-    if (![502, 503, 504].includes(response.status) || attempt === 2)
-      return response;
-    await new Promise((resolve) => setTimeout(resolve, 1000 * (attempt + 1)));
-  }
-  throw new RunError("MODEL_UNAVAILABLE");
-}
+import { ModelRequests, requestLimitsFromEnv } from "./model-requests.js";
 const Decision = z
   .object({ action: Step.nullable(), finish: z.boolean() })
   .strict();
@@ -21,6 +10,10 @@ export async function discover(goal: string, args: unknown, surface: Surface) {
   const key = process.env.GEMINI_API_KEY;
   const model = process.env.GEMINI_MODEL;
   if (!key || !model) throw new RunError("MODEL_CONFIGURATION_REQUIRED");
+  const requests = new ModelRequests(
+    surface.events,
+    requestLimitsFromEnv(process.env),
+  );
   const steps: z.infer<typeof Step>[] = [];
   let failures = 0;
   const seen = new Map<string, number>();
@@ -44,12 +37,11 @@ export async function discover(goal: string, args: unknown, surface: Surface) {
       seen.clear();
       continue;
     }
-    const response = await modelRequest(
+    const response = await requests.request(
       `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json", "x-goog-api-key": key },
-        signal: AbortSignal.timeout(30000),
         body: JSON.stringify({
           systemInstruction: {
             parts: [
@@ -78,13 +70,6 @@ export async function discover(goal: string, args: unknown, surface: Surface) {
         }),
       },
     );
-    surface.events.emit("model_response", { model_calls: iteration + 1 });
-    if (!response.ok)
-      throw new RunError(
-        response.status === 429
-          ? "FREE_QUOTA_EXHAUSTED"
-          : `MODEL_HTTP_${response.status}`,
-      );
     const data = (await response.json()) as {
       candidates?: { content?: { parts?: { text?: string }[] } }[];
     };
