@@ -256,6 +256,7 @@ export class Surface implements ExecutionSurface {
     if (!this.policy.actions.includes(step.action))
       throw new RunError("POLICY_BLOCKED");
     await this.conditions(input);
+    await this.identity();
     const target = this.locator(step.target);
     const count = await target.count();
     if (count !== 1)
@@ -351,12 +352,6 @@ export class Surface implements ExecutionSurface {
     await this.identity();
     if ((await this.locator(extraction.account_kind).count()) !== 1)
       throw new RunError("COMPLETION_NOT_MET");
-    if (
-      (await this.locator(extraction.member).textContent()) !==
-        input.member_id ||
-      (await this.locator(extraction.account_kind).textContent()) !== "savings"
-    )
-      throw new RunError("IDENTITY_MISMATCH");
     for (const target of [
       extraction.member,
       extraction.account_kind,
@@ -367,6 +362,12 @@ export class Surface implements ExecutionSurface {
       if ((await locator.count()) !== 1 || !(await locator.isVisible()))
         throw new RunError("OUTPUT_TARGET_INVALID");
     }
+    if (
+      (await this.locator(extraction.member).textContent()) !==
+        input.member_id ||
+      (await this.locator(extraction.account_kind).textContent()) !== "savings"
+    )
+      throw new RunError("IDENTITY_MISMATCH");
     const balance = await this.locator(extraction.balance).textContent();
     const currency = await this.locator(extraction.currency).textContent();
     if (

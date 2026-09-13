@@ -156,3 +156,5 @@ Every `HEADED=1` CLI run now prints a **Dashboard URL** before opening the banki
 When authentication blocks progress, the dashboard explains whether sign-in or verification is needed. Complete that in the banking window, then click **Resume on the dashboard**. The same session validator handles this action; premature Resume keeps the run paused. Cancel is available while awaiting human intervention. Controls are disabled while automation or validation owns the session. The original Operator URL still works as a minimal handoff page, but the dashboard stays the same across multiple interventions.
 
 The final status remains available for 60 seconds after completion, then the command exits. Financial outputs remain in the invoking terminal; they are not added to the dashboard or logs. The dashboard URL grants local operator control and should not be shared. No additional model calls are involved.
+
+The final requirement-by-requirement review, validation, and scope limits are recorded in [REVIEW.md](REVIEW.md).

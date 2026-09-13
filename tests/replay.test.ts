@@ -393,6 +393,17 @@ test("output extraction follows artifact descriptors and refuses ambiguous outpu
       { balance: "100.00", currency: "USD" },
     );
     await surface.page
+      .locator("#member-id")
+      .evaluate((el) => el.after(el.cloneNode(true)));
+    await assert.rejects(
+      () => surface.complete({ member_id: "12345" }, extraction),
+      /OUTPUT_TARGET_INVALID/,
+    );
+    await surface.page
+      .locator("#member-id")
+      .last()
+      .evaluate((el) => el.remove());
+    await surface.page
       .locator("#available-savings-balance")
       .evaluate((el) => el.after(el.cloneNode(true)));
     await assert.rejects(
