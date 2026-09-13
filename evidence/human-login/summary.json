@@ -1,0 +1,13 @@
+{
+  "scenario": "login",
+  "run_id": "71e665a9-1ea7-4006-acac-fec9264695ab",
+  "status": "success",
+  "assisted": true,
+  "model_calls": 0,
+  "operator": "human",
+  "operator_basis": "User confirmed performing the local demo login and verification flow; runtime events record manual actions and validated resume.",
+  "events_sha256": "5c824993869d1bc53f0e36bc1775df82fe97fb3065111777209fdccbdf056f20",
+  "capability_path": "capabilities/savings.json",
+  "artifact_binding": "Path supplied in the user-reported command; this run did not log an artifact digest.",
+  "output_verification": "Runtime validated outputs; user shared successful terminal result. Output values are omitted from persisted evidence."
+}

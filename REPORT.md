@@ -1,6 +1,6 @@
 # Architecture
 
-The implementation is one TypeScript application controlling a local Chromium session, plus a fictional banking demo server. A genuine Gemini 3.5 Flash Lite run discovered a five-action savings lookup. The unchanged artifact then returned another member's balance and passed seven replay scenarios. Discovery made five API requests; replay makes none. Public evidence distinguishes live discovery, unattended replay, and a simulated operator.
+The implementation is one TypeScript application controlling a local Chromium session, plus a fictional banking demo server. A genuine Gemini 3.5 Flash Lite run discovered a five-action savings lookup. The unchanged artifact then returned another member's balance and passed seven replay scenarios. Discovery made five API requests; replay makes none. Evidence distinguishes live discovery, unattended replay, a simulated operator, and a user-operated login walkthrough.
 
 The discovery controller observes the rendered page/accessibility snapshot, requests one schema-validated action, and sends it through the shared browser action gateway. It does not receive a prerecorded sequence. The gateway checks policy, resolves the real control, executes it, and verifies the effect. The builder retains only successful actions, replaces invocation values with explicit parameter bindings, and adds an authored completion/extraction contract. Completion is checked after every action, avoiding an unnecessary final model call.
 
@@ -34,7 +34,7 @@ An authentication blocker, stuck discovery, or supported replay blocker yields a
 
 The current runner executes actions sequentially. Gateway ownership checks reject automated actions during human control; direct local mouse/keyboard access is a trusted-operator boundary rather than remote input fencing. Capture-phase instrumentation records manual click/change/submit/navigation event types without entered values. Browser chrome and OS actions are outside that capture. The checkpoint after resume prevents repeating completed work. An assisted discovery is not published because manual steps are not compiled into a reusable artifact.
 
-Automated tests and curated replay evidence exercise a simulated operator in the same live session and verify assisted success. A later user-operated walkthrough completed with assisted success, as confirmed by the user; the curated evidence here still identifies its automated operator accurately. The README provides the exact manual demonstration commands; the evidence does not mislabel the simulation as human activity.
+Automated tests and curated replay evidence exercise a simulated operator in the same live session and verify assisted success. A later user-operated login walkthrough completed with assisted success. Its original sanitized events and a summary are preserved in `evidence/human-login/`, separately from simulated-operator evidence. The README provides the exact manual demonstration commands; the evidence does not mislabel the simulation as human activity.
 
 # Safety
 

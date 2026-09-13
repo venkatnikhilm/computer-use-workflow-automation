@@ -14,7 +14,7 @@ The live discovery used Gemini 3.5 Flash Lite against the local fictional bankin
 | `unknown-state` | Structured failure and sanitized structural snapshot |
 | `simulated-handoff` | Automation yields; a simulated operator acts in the same session; validated resume succeeds |
 
-The simulated operator is explicitly labelled. A real-person handoff session timed out; there is no claim that a person completed the recorded successful handoff. The mechanism itself uses real browser state and an actual operator HTTP endpoint, not a mocked session.
+An additional walkthrough is saved in `human-login/`: a real person completed the fictional staff login and simulated verification code, then resumed automation. Its original events show authentication intervention, manual actions, validated resume, all five workflow steps, and assisted success with zero model calls. The user confirmed operating this run. Its separate summary hashes the preserved event file; unlike the seven harness runs, the manual run did not record an artifact digest. The simulated-operator evidence remains separately labeled. Re-running the seven-scenario harness does not replace this manual evidence.
 
 Run `npm run verify:capability` to reproduce the seven replays without a model key. It preserves the original discovery evidence and updates replay logs/manifest. This command launches local servers itself. The checked-in capability also replays directly with the README commands.
 

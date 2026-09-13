@@ -2,7 +2,7 @@
 
 An LLM learns a member lookup through a real browser. The resulting typed capability replays with new inputs without calling a model. The local target is a fictional, server-rendered banking application with no automation-only test IDs.
 
-**Verified:** a genuine Gemini 3.5 Flash Lite discovery produced `capabilities/savings.json` in five API requests. That unchanged artifact returned another member's balance and handled missing members/accounts, ambiguous accounts, slow loading, unknown state, and a simulated operator takeover. See [evidence](evidence/README.md). A subsequent user-operated handoff completed successfully; the curated handoff evidence currently remains the explicitly labeled automated simulation.
+**Verified:** a genuine Gemini 3.5 Flash Lite discovery produced `capabilities/savings.json` in five API requests. That unchanged artifact returned another member's balance and handled missing members/accounts, ambiguous accounts, slow loading, unknown state, and a simulated operator takeover. See [evidence](evidence/README.md). A subsequent user-operated login and verification handoff also completed successfully; its original sanitized logs are preserved in [human-login evidence](evidence/human-login/summary.json).
 
 ## Setup
 
