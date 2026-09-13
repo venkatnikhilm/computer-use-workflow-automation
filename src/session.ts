@@ -108,6 +108,7 @@ export class Session {
           res.end("Resumed");
           end();
         } catch {
+          res.writeHead(409);
           res.end("Session lost");
           end(new RunError("SESSION_LOST"));
         }

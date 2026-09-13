@@ -53,18 +53,18 @@ export class Surface implements ExecutionSurface {
     Policy.parse(policy);
     TenantProfile.parse(profile);
     this.session.guidance = async () => {
-      if (this.violation || !this.allowed(this.page.url()))
+      if (this.violation || !this.allowed(this.document().url()))
         return "The browser left an allowed destination. Cancel this run and restart.";
       if (
-        await this.page
+        await this.document()
           .getByRole("heading", { name: "Verify your identity", exact: true })
           .count()
       )
         return "Complete verification in the banking window, then return here and click Resume.";
-      if (await this.page.locator("[data-auth-required]").count())
+      if (await this.document().locator("[data-auth-required]").count())
         return "Complete sign-in and verification in the banking window. Leave it on the returned screen, then click Resume here.";
       if (
-        await this.page
+        await this.document()
           .getByRole("heading", { name: "Session expired", exact: true })
           .count()
       )
@@ -302,15 +302,34 @@ export class Surface implements ExecutionSurface {
       throw new RunError("TARGET_NOT_ACTIONABLE");
     // Independent application policy inspects the actual control, never a model risk label.
     this.check();
-    const info = await target.evaluate((el) => ({
-      tag: el.tagName,
-      name: el.getAttribute("name"),
-      text: el.textContent?.trim(),
-      href: el.getAttribute("href"),
-      action: (el.closest("form") as HTMLFormElement | null)?.getAttribute(
-        "action",
-      ),
-    }));
+    const info = await target.evaluate((el) => {
+      const form = (el as HTMLInputElement).form ?? el.closest("form");
+      return {
+        tag: el.tagName,
+        name: el.getAttribute("name"),
+        text: el.textContent?.trim(),
+        href: el instanceof HTMLAnchorElement ? el.href : null,
+        linkTarget: el instanceof HTMLAnchorElement ? el.target : "",
+        inputType: el instanceof HTMLInputElement ? el.type : null,
+        action: el.hasAttribute("formaction")
+          ? (el as HTMLButtonElement).formAction
+          : form?.action,
+        method: (
+          el.getAttribute("formmethod") ??
+          form?.method ??
+          "get"
+        ).toLowerCase(),
+        formTarget: el.getAttribute("formtarget") ?? form?.target ?? "",
+        buttonType: el instanceof HTMLButtonElement ? el.type : null,
+      };
+    });
+    const permittedSearchForm = Boolean(
+      info.action &&
+      this.allowed(info.action) &&
+      new URL(info.action).pathname === this.policy.search_form &&
+      info.method === "get" &&
+      ["", "_self"].includes(info.formTarget),
+    );
     const canonicalLabels: Record<string, string> = {
       [this.profile.labels.members]: "Members",
       [this.profile.labels.open_member]: "Open member",
@@ -322,6 +341,8 @@ export class Surface implements ExecutionSurface {
     if (step.action === "fill") {
       if (
         info.tag !== "INPUT" ||
+        !["text", "search"].includes(info.inputType ?? "") ||
+        !permittedSearchForm ||
         !this.policy.fill_names.includes(info.name ?? "") ||
         !step.input
       )
@@ -334,12 +355,14 @@ export class Surface implements ExecutionSurface {
       const safeLink =
         info.tag === "A" &&
         info.href &&
+        ["", "_self"].includes(info.linkTarget) &&
         this.allowed(new URL(info.href, this.base).href) &&
         this.policy.link_labels.includes(canonicalText ?? "");
       const safeSearch =
         info.tag === "BUTTON" &&
         canonicalText === "Search" &&
-        info.action === this.policy.search_form;
+        info.buttonType === "submit" &&
+        permittedSearchForm;
       if (!safeLink && !safeSearch) throw new RunError("POLICY_BLOCKED");
       const before = this.document().url();
       this.diagnostics.phase = "dispatch";
