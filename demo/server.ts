@@ -13,6 +13,17 @@ export async function startDemo(
     : undefined;
   const server = createServer(async (req, res) => {
     const url = new URL(req.url!, "http://localhost");
+    if (
+      scenario.startsWith("legacy") &&
+      url.pathname === "/" &&
+      !url.searchParams.has("embedded")
+    ) {
+      res.setHeader("Content-Type", "text/html; charset=utf-8");
+      res.end(
+        '<!doctype html><title>Legacy staff workstation</title><h1>Staff workstation</h1><p>Navigation and account records appear in the embedded application.</p><iframe name="workspace" title="Banking workspace" src="/?embedded=1" style="width:95vw;height:85vh;border:1px solid #aaa"></iframe>',
+      );
+      return;
+    }
     const id = url.searchParams.get("member") ?? "";
     const safe = /^\d{5}$/.test(id) ? id : "";
     const known = ["12345", "67890", "11111", "22222"].includes(safe);
@@ -65,6 +76,21 @@ export async function startDemo(
         .replace("<dl>", '<table aria-label="Deposit account details"><tbody>')
         .replace("</dl>", "</tbody></table>")
         .replaceAll("<dt>", '<tr><th scope="row">')
+        .replaceAll("</dt>", "</th>")
+        .replaceAll("<dd ", "<td ")
+        .replaceAll("</dd>", "</td></tr>");
+    }
+    if (scenario.startsWith("legacy")) {
+      body = body.replace(
+        '<label>Member ID <input name="member" pattern="[0-9]{5}" required></label>',
+        '<table><tr><td>Member number</td><td><input name="member" pattern="[0-9]{5}" required></td></tr></table>',
+      );
+      if (scenario === "legacy-ambiguous" && url.pathname === "/members")
+        body = body.replace("</form>", '<input name="member"></form>');
+      body = body
+        .replace("<dl>", "<table><tbody>")
+        .replace("</dl>", "</tbody></table>")
+        .replaceAll("<dt>", "<tr><th>")
         .replaceAll("</dt>", "</th>")
         .replaceAll("<dd ", "<td ")
         .replaceAll("</dd>", "</td></tr>");

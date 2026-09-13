@@ -10,7 +10,8 @@
     "discover": "tsx src/cli.ts discover",
     "replay": "tsx src/cli.ts replay",
     "verify:capability": "tsx scripts/verify-capability.ts",
-    "verify:tenants": "tsx scripts/verify-tenants.ts"
+    "verify:tenants": "tsx scripts/verify-tenants.ts",
+    "verify:legacy": "tsx scripts/verify-legacy.ts"
   },
   "dependencies": {
     "playwright": "1.63.0",

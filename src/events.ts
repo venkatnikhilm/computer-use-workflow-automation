@@ -12,6 +12,7 @@ export class Events {
   emit(
     type: string,
     fields: {
+      match_count?: number;
       profile_digest?: string;
       artifact_digest?: string;
       tenant_id?: string;

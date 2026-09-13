@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "tenant_id": "harbor",
+  "application": "bank-demo-v1",
+  "layout_version": "1",
+  "base_url": "http://127.0.0.1:4177/",
+  "labels": {
+    "members": "Members",
+    "member_id": "Member ID",
+    "search": "Search",
+    "open_member": "Open member",
+    "savings": "Savings"
+  },
+  "extraction": {
+    "member": {
+      "by": "css",
+      "value": "#member-id"
+    },
+    "account_kind": {
+      "by": "css",
+      "value": "#account-kind"
+    },
+    "balance": {
+      "by": "css",
+      "value": "#balance"
+    },
+    "currency": {
+      "by": "css",
+      "value": "#currency"
+    }
+  },
+  "frame_name": "workspace",
+  "member_input": {
+    "by": "css",
+    "value": "form[action=\"/results\"] input[name=\"member\"]"
+  }
+}

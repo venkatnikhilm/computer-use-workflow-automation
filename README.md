@@ -166,3 +166,21 @@ The final status remains available for 60 seconds after completion, then the com
 The final requirement-by-requirement review, validation, and scope limits are recorded in [REVIEW.md](REVIEW.md).
 
 If a demo server was started before a code update, stop and restart it before replay. Older pages without tenant/version markers are rejected explicitly.
+
+## Legacy iframe targeting and diagnostic evidence
+
+Run `npm run verify:legacy` to replay the unchanged discovery artifact inside a named iframe, then deliberately exercise an ambiguous member field. The first run must succeed; the second must stop with `AMBIGUOUS_TARGET`. Evidence is saved under `evidence/legacy/`.
+
+To watch the legacy variant, use two terminals:
+
+```sh
+PORT=4177 SCENARIO=legacy npm run demo
+```
+
+```sh
+PROFILE_FILE=profiles/legacy.json DEMO_URL=http://127.0.0.1:4177 HEADED=1 npm run replay -- 67890 capabilities/savings.json
+```
+
+The profile selects exactly one named frame and maps the unlabeled member field through a scoped CSS selector. Navigation/checkpoints and extraction use the frame's document, not the outer shell URL. Duplicate frames or controls fail instead of selecting a first match. This demonstrates one configured same-origin iframe, a non-semantic input, and table markup; arbitrary nested frames, cross-origin authentication, and visual-only targeting remain outside this demonstration. No new AI discovery is claimed for the legacy variant.
+
+New failure snapshots include a safe route (no query string), step, ownership, phase, target match count/actionability when measured, and checkpoint status when evaluated, plus structural tags and allowlisted roles. Successful actions log `POSTCONDITION_VERIFIED`. Raw locators, page text, input values, balances, and credentials are omitted. Older historical evidence retains its original schema.

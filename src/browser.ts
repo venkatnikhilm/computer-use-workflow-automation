@@ -24,6 +24,24 @@ export class Surface implements ExecutionSurface {
   violation = false;
   readonly deadline: number;
   stepIndex = 0;
+  diagnostics: {
+    action?: string;
+    phase?: string;
+    matches?: number;
+    visible?: boolean;
+    enabled?: boolean;
+    expected_path?: string;
+    checkpoint_passed?: boolean;
+  } = {};
+  document() {
+    if (!this.profile.frame_name) return this.page;
+    const frames = this.page
+      .frames()
+      .filter((frame) => frame.name() === this.profile.frame_name);
+    if (frames.length !== 1)
+      throw new RunError(frames.length ? "AMBIGUOUS_FRAME" : "FRAME_NOT_FOUND");
+    return frames[0]!;
+  }
   constructor(
     readonly base: string,
     readonly events: Events,
@@ -127,6 +145,17 @@ export class Surface implements ExecutionSurface {
         });
     });
     await this.page.goto(this.base);
+    if (this.profile.frame_name) {
+      const frame = this.page.locator(
+        `iframe[name="${this.profile.frame_name}"]`,
+      );
+      if ((await frame.count()) !== 1)
+        throw new RunError(
+          (await frame.count()) ? "AMBIGUOUS_FRAME" : "FRAME_NOT_FOUND",
+        );
+      await frame.waitFor({ state: "visible", timeout: 4000 });
+      await this.document().waitForLoadState("domcontentloaded");
+    }
     await this.identity();
     this.events.emit("profile_verified", {
       profile_digest: digest(this.profile),
@@ -144,7 +173,7 @@ export class Surface implements ExecutionSurface {
       ],
     ];
     for (const [name, expected, code] of markers) {
-      const marker = this.page.locator(`meta[name="${name}"]`);
+      const marker = this.document().locator(`meta[name="${name}"]`);
       if (
         (await marker.count()) !== 1 ||
         (await marker.getAttribute("content")) !== expected
@@ -155,43 +184,43 @@ export class Surface implements ExecutionSurface {
   check() {
     this.session.assertAutomation();
     if (Date.now() > this.deadline) throw new RunError("RUN_TIMEOUT");
-    if (this.violation || !this.allowed(this.page.url()))
+    if (this.violation || !this.allowed(this.document().url()))
       throw new RunError("POLICY_BLOCKED");
   }
   locator(target: z.infer<typeof Target>): Locator {
     target = resolveProfileTarget(target, this.profile);
     if (target.by === "label")
-      return this.page.getByLabel(target.value, { exact: true });
+      return this.document().getByLabel(target.value, { exact: true });
     if (target.by === "role" && target.role)
-      return this.page.getByRole(target.role, {
+      return this.document().getByRole(target.role, {
         name: target.value,
         exact: true,
       });
-    if (target.by === "css") return this.page.locator(target.value);
+    if (target.by === "css") return this.document().locator(target.value);
     throw new RunError("INVALID_TARGET");
   }
   async conditions(input?: { member_id: string }) {
     this.check();
     const loginRequired =
-      (await this.page.locator("[data-auth-required]").count()) > 0;
+      (await this.document().locator("[data-auth-required]").count()) > 0;
     if (
       loginRequired ||
-      (await this.page
+      (await this.document()
         .getByRole("heading", { name: "Session expired", exact: true })
         .count())
     ) {
-      const checkpointURL = this.page.url();
+      const checkpointURL = this.document().url();
       this.session.step = this.stepIndex;
       await this.evidence();
       await this.session.handoff("AUTH_REQUIRED", async () => {
         if (
           this.violation ||
-          !this.allowed(this.page.url()) ||
-          this.page.url() !== checkpointURL
+          !this.allowed(this.document().url()) ||
+          this.document().url() !== checkpointURL
         )
           return false;
         await this.identity();
-        if (await this.page.locator("[data-auth-required]").count())
+        if (await this.document().locator("[data-auth-required]").count())
           return false;
         if (new URL(checkpointURL).pathname === "/account") {
           if (!input) return false;
@@ -204,14 +233,14 @@ export class Surface implements ExecutionSurface {
         }
         return (
           loginRequired &&
-          (await this.page
+          (await this.document()
             .getByRole("heading", { name: "Session expired", exact: true })
             .count()) === 0
         );
       });
     }
     this.check();
-    const current = new URL(this.page.url());
+    const current = new URL(this.document().url());
     const path = current.pathname;
     if (
       input &&
@@ -229,7 +258,7 @@ export class Surface implements ExecutionSurface {
       throw new RunError("IDENTITY_MISMATCH");
     if (
       path === "/results" &&
-      (await this.page
+      (await this.document()
         .getByRole("status")
         .filter({ hasText: /^Member not found$/ })
         .count())
@@ -237,7 +266,7 @@ export class Surface implements ExecutionSurface {
       throw new RunError("MEMBER_NOT_FOUND");
     if (
       path === "/member" &&
-      (await this.page
+      (await this.document()
         .getByRole("status")
         .filter({ hasText: /^No savings account$/ })
         .count())
@@ -245,13 +274,14 @@ export class Surface implements ExecutionSurface {
       throw new RunError("NO_SAVINGS_ACCOUNT");
     if (
       path === "/member" &&
-      (await this.page
+      (await this.document()
         .getByRole("link", { name: this.profile.labels.savings, exact: true })
         .count()) > 1
     )
       throw new RunError("AMBIGUOUS_ACCOUNT");
   }
   async act(step: StepType, input: { member_id: string }) {
+    this.diagnostics = { action: step.action, phase: "preflight" };
     this.check();
     if (!this.policy.actions.includes(step.action))
       throw new RunError("POLICY_BLOCKED");
@@ -259,9 +289,16 @@ export class Surface implements ExecutionSurface {
     await this.identity();
     const target = this.locator(step.target);
     const count = await target.count();
+    this.diagnostics = {
+      action: step.action,
+      phase: "resolve_target",
+      matches: count,
+    };
     if (count !== 1)
       throw new RunError(count ? "AMBIGUOUS_TARGET" : "TARGET_NOT_FOUND");
-    if (!(await target.isVisible()) || !(await target.isEnabled()))
+    this.diagnostics.visible = await target.isVisible();
+    this.diagnostics.enabled = await target.isEnabled();
+    if (!this.diagnostics.visible || !this.diagnostics.enabled)
       throw new RunError("TARGET_NOT_ACTIONABLE");
     // Independent application policy inspects the actual control, never a model risk label.
     this.check();
@@ -289,6 +326,7 @@ export class Surface implements ExecutionSurface {
         !step.input
       )
         throw new RunError("POLICY_BLOCKED");
+      this.diagnostics.phase = "dispatch";
       await target.fill(input.member_id);
       if ((await target.inputValue()) !== input.member_id)
         throw new RunError("FIELD_NOT_SET");
@@ -303,30 +341,50 @@ export class Surface implements ExecutionSurface {
         canonicalText === "Search" &&
         info.action === this.policy.search_form;
       if (!safeLink && !safeSearch) throw new RunError("POLICY_BLOCKED");
-      const before = this.page.url();
+      const before = this.document().url();
+      this.diagnostics.phase = "dispatch";
       await target.click();
-      await this.page
+      await this.document()
         .waitForURL((url) => url.href !== before, { timeout: 4000 })
         .catch(() => {
           throw new RunError("POSTCONDITION_TIMEOUT");
         });
-      await this.page.waitForLoadState("domcontentloaded");
+      await this.document().waitForLoadState("domcontentloaded");
     }
     this.check();
     await this.identity();
+    this.diagnostics.phase = "checkpoint";
+    if (step.postcondition?.kind === "path") {
+      this.diagnostics.expected_path = this.policy.routes.includes(
+        step.postcondition.value,
+      )
+        ? step.postcondition.value
+        : "disallowed";
+      this.diagnostics.checkpoint_passed =
+        new URL(this.document().url()).pathname === step.postcondition.value;
+    }
     if (
       step.postcondition?.kind === "path" &&
-      new URL(this.page.url()).pathname !== step.postcondition.value
+      new URL(this.document().url()).pathname !== step.postcondition.value
     )
       throw new RunError("CHECKPOINT_MISMATCH");
     // Persist a semantic descriptor of the permitted control, not model-supplied CSS
     // or a selector containing invocation data. The fixed profile supplies safe labels.
+    this.events.emit("action_verified", {
+      step: this.stepIndex,
+      action: step.action,
+      code: "POSTCONDITION_VERIFIED",
+      match_count: count,
+    });
     return {
       action: step.action,
       postcondition:
         step.action === "fill"
           ? { kind: "field_equals_input" as const, input: "member_id" as const }
-          : { kind: "path" as const, value: new URL(this.page.url()).pathname },
+          : {
+              kind: "path" as const,
+              value: new URL(this.document().url()).pathname,
+            },
       target:
         step.action === "fill"
           ? { by: "label" as const, value: "Member ID" }
@@ -346,8 +404,9 @@ export class Surface implements ExecutionSurface {
     input: { member_id: string },
     extraction = defaultExtraction,
   ) {
+    this.diagnostics = { phase: "verify_outputs" };
     Extraction.parse(extraction);
-    if (this.violation || !this.allowed(this.page.url()))
+    if (this.violation || !this.allowed(this.document().url()))
       throw new RunError("POLICY_BLOCKED");
     await this.identity();
     if ((await this.locator(extraction.account_kind).count()) !== 1)
@@ -383,7 +442,7 @@ export class Surface implements ExecutionSurface {
     const target = this.locator(step.target);
     return (
       !this.violation &&
-      this.allowed(this.page.url()) &&
+      this.allowed(this.document().url()) &&
       (await target.count()) === 1 &&
       (await target.isVisible()) &&
       (await target.isEnabled())
@@ -397,25 +456,57 @@ export class Surface implements ExecutionSurface {
   }
   async observe() {
     return {
-      path: new URL(this.page.url()).pathname,
-      snapshot: (await this.page.locator("body").ariaSnapshot()).slice(
+      path: new URL(this.document().url()).pathname,
+      snapshot: (await this.document().locator("body").ariaSnapshot()).slice(
         0,
         12000,
       ),
     };
   }
   async evidence() {
-    try {
-      this.events.snapshot(
-        await this.page.locator("body").evaluate((el) => ({
-          tags: Array.from(el.querySelectorAll("*"))
-            .map((x) => ({ tag: x.tagName, role: x.getAttribute("role") }))
-            .slice(0, 150),
-        })),
+    const failure = [...this.events.history]
+      .reverse()
+      .find((e) =>
+        ["failure", "intervention", "business_outcome"].includes(e.type),
       );
-    } catch {
-      this.events.snapshot({ state: "unavailable" });
-    }
+    let structure: unknown = { state: "unavailable" };
+    let route = "unavailable";
+    try {
+      const url = new URL(this.document().url());
+      route = this.allowed(url.href) ? url.pathname : "disallowed";
+      structure = await this.document()
+        .locator("body")
+        .evaluate((el) => ({
+          tags: Array.from(el.querySelectorAll("*"))
+            .slice(0, 150)
+            .map((x) => ({
+              tag: x.tagName,
+              role: [
+                "button",
+                "link",
+                "status",
+                "alert",
+                "heading",
+                "textbox",
+                "table",
+                "row",
+                "cell",
+              ].includes(x.getAttribute("role") ?? "")
+                ? x.getAttribute("role")
+                : null,
+            })),
+        }));
+    } catch {}
+    this.events.snapshot({
+      schema_version: 1,
+      step: this.stepIndex,
+      code: failure?.code,
+      route,
+      ownership: this.session.owner,
+      framed: Boolean(this.profile.frame_name),
+      diagnostics: this.diagnostics,
+      structure,
+    });
   }
   async close() {
     this.session.server?.close();

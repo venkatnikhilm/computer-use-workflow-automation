@@ -8,6 +8,11 @@ export const TenantProfile = z
     tenant_id: z.enum(["harbor", "summit"]),
     application: z.literal("bank-demo-v1"),
     layout_version: z.literal("1"),
+    frame_name: z
+      .string()
+      .regex(/^[a-z][a-z0-9_-]{0,39}$/)
+      .optional(),
+    member_input: Target.optional(),
     base_url: z
       .string()
       .url()
@@ -73,7 +78,7 @@ export function resolveProfileTarget(
     ],
     [
       { by: "label", value: "Member ID" },
-      { by: "label", value: profile.labels.member_id },
+      profile.member_input ?? { by: "label", value: profile.labels.member_id },
     ],
     [
       { by: "role", role: "button", value: "Search" },

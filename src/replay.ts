@@ -99,7 +99,6 @@ export async function replay(
     return { status: "success", outputs, assisted: surface.session.assisted };
   } catch (error) {
     const code = error instanceof RunError ? error.code : "EXECUTION_FAILED";
-    await surface.evidence();
     const business = [
       "MEMBER_NOT_FOUND",
       "NO_SAVINGS_ACCOUNT",
@@ -110,6 +109,7 @@ export async function replay(
       step,
       model_calls: 0,
     });
+    await surface.evidence();
     return {
       status: business
         ? "business_outcome"

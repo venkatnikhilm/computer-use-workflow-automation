@@ -1,0 +1,9 @@
+{
+  "scenario": "legacy",
+  "run_id": "dc05457a-ec2d-4e77-a313-000919f6f853",
+  "artifact_sha256": "9aa764a60409c0b50c947ebd4111f4f5e91d72d988bf900efc89a21e44e58e97",
+  "profile_digest": "646094c5e422b27b16fbee9e172748216a8f04d424bcbe47557c16b8b53843ad",
+  "status": "success",
+  "model_calls": 0,
+  "output_checked": true
+}
