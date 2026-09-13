@@ -6,7 +6,7 @@ An LLM learns a member lookup through a real browser. The resulting typed capabi
 
 ## Reviewer starting point
 
-Read [REPORT.md](REPORT.md) for the implemented design and trade-offs, and [REVIEW.md](REVIEW.md) for requirement coverage and explicit limits. The original proposal in ARCHITECTURE.md is not a description of every implemented feature.
+Read [REPORT.md](REPORT.md) for the implemented design, trade-offs, and explicit limits. See [evidence/README.md](evidence/README.md) for the recorded demonstrations.
 
 After setup, `npm run verify:capability` demonstrates seven outcomes and `npm run verify:tenants` demonstrates reuse across two variants, without a model key. Genuine discovery evidence is already checked in. To observe human intervention, use the staff-login commands below and open the **Dashboard URL** in a separate regular browser window.
 
@@ -103,7 +103,7 @@ Member-not-found, no savings account, and ambiguous accounts are business outcom
 
 CLI runs write sanitized JSONL events under ignored `runs/`. Rich failure evidence is a structural DOM snapshot containing tags and roles, without raw text or field values. Sensitive outputs go to the invoking terminal, not persisted event logs. Only fictional page data is sent to the provider; using real regulated data would need additional observation redaction and deployment controls.
 
-The detailed design is in `ARCHITECTURE.md`; the implemented design and deliberate cuts are in `REPORT.md`. No remote publication or push has been performed.
+The implemented design and deliberate cuts are described in [REPORT.md](REPORT.md).
 
 API references: [Playwright contexts](https://playwright.dev/docs/api/class-browsercontext), [Gemini structured output](https://ai.google.dev/gemini-api/docs/structured-output), [Gemini rate limits](https://ai.google.dev/gemini-api/docs/rate-limits).
 
@@ -163,7 +163,7 @@ When authentication blocks progress, the dashboard explains whether sign-in or v
 
 The final status remains available for 60 seconds after completion, then the command exits. Financial outputs remain in the invoking terminal; they are not added to the dashboard or logs. The dashboard URL grants local operator control and should not be shared. No additional model calls are involved.
 
-The final requirement-by-requirement review, validation, and scope limits are recorded in [REVIEW.md](REVIEW.md).
+
 
 If a demo server was started before a code update, stop and restart it before replay. Older pages without tenant/version markers are rejected explicitly.
 
