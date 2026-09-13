@@ -77,7 +77,18 @@ export class Dashboard {
             guidance = "The banking window is unavailable. Cancel this run.";
           }
         }
-        res.end(JSON.stringify({ ...this.state(), guidance }));
+        const state = this.state();
+        if (
+          this.ended &&
+          [
+            "INCOMPATIBLE_APP",
+            "TENANT_MISMATCH",
+            "UNSUPPORTED_APP_VERSION",
+          ].includes(state.code ?? "")
+        )
+          guidance =
+            "The application does not match the selected tenant/version. If you updated this project, restart the demo server, then rerun replay with the matching profile.";
+        res.end(JSON.stringify({ ...state, guidance }));
         return;
       }
       if (req.method === "GET") {

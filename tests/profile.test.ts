@@ -104,3 +104,27 @@ test("tenant translation cannot override deployment action policy", async () => 
     await new Promise<void>((r) => server.close(() => r()));
   }
 });
+
+test("an older server without tenant metadata fails with an explicit compatibility code", async () => {
+  const server = await startDemo(0, "normal", Date.now, "summit");
+  const address = server.address();
+  assert(address && typeof address !== "string");
+  const events = new Events("evidence/development");
+  const surface = new Surface(
+    `http://127.0.0.1:${address.port}`,
+    events,
+    new Session(events, false),
+    defaultPolicy,
+    summit,
+  );
+  try {
+    await surface.open();
+    await surface.page
+      .locator('meta[name="tenant"]')
+      .evaluate((el) => el.remove());
+    await assert.rejects(surface.identity(), { code: "TENANT_MISMATCH" });
+  } finally {
+    await surface.close();
+    await new Promise<void>((resolve) => server.close(() => resolve()));
+  }
+});

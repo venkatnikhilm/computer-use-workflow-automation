@@ -134,24 +134,23 @@ export class Surface implements ExecutionSurface {
     });
   }
   async identity() {
-    if (
-      (await this.page
-        .locator('meta[name="application"]')
-        .getAttribute("content")) !== "bank-demo-v1"
-    )
-      throw new RunError("INCOMPATIBLE_APP");
-    if (
-      (await this.page
-        .locator('meta[name="tenant"]')
-        .getAttribute("content")) !== this.profile.tenant_id
-    )
-      throw new RunError("TENANT_MISMATCH");
-    if (
-      (await this.page
-        .locator('meta[name="layout-version"]')
-        .getAttribute("content")) !== this.profile.layout_version
-    )
-      throw new RunError("UNSUPPORTED_APP_VERSION");
+    const markers = [
+      ["application", "bank-demo-v1", "INCOMPATIBLE_APP"],
+      ["tenant", this.profile.tenant_id, "TENANT_MISMATCH"],
+      [
+        "layout-version",
+        this.profile.layout_version,
+        "UNSUPPORTED_APP_VERSION",
+      ],
+    ];
+    for (const [name, expected, code] of markers) {
+      const marker = this.page.locator(`meta[name="${name}"]`);
+      if (
+        (await marker.count()) !== 1 ||
+        (await marker.getAttribute("content")) !== expected
+      )
+        throw new RunError(code!);
+    }
   }
   check() {
     this.session.assertAutomation();
