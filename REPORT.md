@@ -34,7 +34,7 @@ An authentication blocker, stuck discovery, or supported replay blocker yields a
 
 The current runner executes actions sequentially. Gateway ownership checks reject automated actions during human control; direct local mouse/keyboard access is a trusted-operator boundary rather than remote input fencing. Capture-phase instrumentation records manual click/change/submit/navigation event types without entered values. Browser chrome and OS actions are outside that capture. The checkpoint after resume prevents repeating completed work. An assisted discovery is not published because manual steps are not compiled into a reusable artifact.
 
-Automated tests and curated replay evidence exercise a simulated operator in the same live session and verify assisted success. A real-person session was opened but timed out without completed resume. The README provides the exact manual demonstration commands; the evidence does not mislabel the simulation as human activity.
+Automated tests and curated replay evidence exercise a simulated operator in the same live session and verify assisted success. A later user-operated walkthrough completed with assisted success, as confirmed by the user; the curated evidence here still identifies its automated operator accurately. The README provides the exact manual demonstration commands; the evidence does not mislabel the simulation as human activity.
 
 # Safety
 
@@ -45,3 +45,5 @@ Only fictional data is used. Credentials remain in ignored `.env`; request heade
 # Cuts
 
 No distributed workers, production authentication, database, desktop implementation, visual-only targeting, cross-tenant deployment, unrestricted workflow language, or model-assisted replay. The capability and condition profile deliberately implement one complete read-only workflow. A formal approval catalog, per-tenant overrides, stronger content-aware failure screenshots, and durable session recovery are next steps. A real manual walkthrough remains a useful final reviewer check; genuine discovery and model-free replay are already evidenced. Publishing the repository and emailing its link are separate user actions and have not been performed.
+
+The local demo additionally offers staff login and a simulated verification challenge, including wrong/expired codes and an injected mid-workflow expiry. Authentication remains human-operated; the saved capability excludes credentials. This is an in-memory simulator with a fixed demonstration code, not production MFA or a real bank integration.

@@ -9,7 +9,17 @@ export const Policy = z
   })
   .strict();
 export const defaultPolicy = Policy.parse({
-  routes: ["/", "/members", "/results", "/member", "/account", "/authenticate"],
+  routes: [
+    "/",
+    "/members",
+    "/results",
+    "/member",
+    "/account",
+    "/authenticate",
+    "/login",
+    "/verify",
+    "/logout",
+  ],
   actions: ["click", "fill"],
   link_labels: ["Members", "Open member", "Savings"],
   fill_names: ["member"],

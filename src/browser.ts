@@ -15,7 +15,7 @@ export class Surface implements ExecutionSurface {
   browser!: Browser;
   page!: Page;
   violation = false;
-  readonly deadline = Date.now() + 180000;
+  readonly deadline: number;
   stepIndex = 0;
   constructor(
     readonly base: string,
@@ -23,6 +23,7 @@ export class Surface implements ExecutionSurface {
     readonly session: Session,
     readonly policy = defaultPolicy,
   ) {
+    this.deadline = Date.now() + (session.interactive ? 900000 : 180000);
     Policy.parse(policy);
   }
   allowed(raw: string) {
@@ -122,21 +123,43 @@ export class Surface implements ExecutionSurface {
   }
   async conditions(input?: { member_id: string }) {
     this.check();
+    const loginRequired =
+      (await this.page.locator("[data-auth-required]").count()) > 0;
     if (
-      await this.page
+      loginRequired ||
+      (await this.page
         .getByRole("heading", { name: "Session expired", exact: true })
-        .count()
+        .count())
     ) {
+      const checkpointURL = this.page.url();
       this.session.step = this.stepIndex;
       await this.evidence();
-      await this.session.handoff(
-        "AUTH_REQUIRED",
-        async () =>
-          this.allowed(this.page.url()) &&
-          (await this.page.locator("#account-kind").count()) === 1 &&
-          (await this.page.locator("#account-kind").textContent()) ===
-            "savings",
-      );
+      await this.session.handoff("AUTH_REQUIRED", async () => {
+        if (
+          this.violation ||
+          !this.allowed(this.page.url()) ||
+          this.page.url() !== checkpointURL
+        )
+          return false;
+        await this.identity();
+        if (await this.page.locator("[data-auth-required]").count())
+          return false;
+        if (new URL(checkpointURL).pathname === "/account") {
+          if (!input) return false;
+          try {
+            await this.verifyOutput(input);
+            return true;
+          } catch {
+            return false;
+          }
+        }
+        return (
+          loginRequired &&
+          (await this.page
+            .getByRole("heading", { name: "Session expired", exact: true })
+            .count()) === 0
+        );
+      });
     }
     this.check();
     const current = new URL(this.page.url());

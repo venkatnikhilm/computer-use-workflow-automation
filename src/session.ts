@@ -12,7 +12,7 @@ export class Session {
   constructor(
     readonly events: Events,
     readonly interactive: boolean,
-    readonly timeoutMs = 120000,
+    readonly timeoutMs = 300000,
   ) {}
   assertAutomation() {
     if (this.owner !== "automation") throw new RunError("CONTROL_NOT_OWNED");
@@ -92,9 +92,11 @@ export class Session {
           }
           if (!valid) {
             this.owner = "human";
+            res.setHeader("Content-Type", "text/html");
+            res.setHeader("Cache-Control", "no-store");
             res.writeHead(409);
             res.end(
-              "Checkpoint not satisfied. Resolve the blocker and try again.",
+              `<!doctype html><h1>Still waiting for the banking screen</h1><p>Complete sign-in and verification in the banking window. Leave it on the screen you returned to, then try Resume again here.</p><form method="POST"><button name="action" value="resume">Resume</button><button name="action" value="cancel">Cancel</button></form>`,
             );
             return;
           }

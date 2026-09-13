@@ -2,7 +2,7 @@
 
 An LLM learns a member lookup through a real browser. The resulting typed capability replays with new inputs without calling a model. The local target is a fictional, server-rendered banking application with no automation-only test IDs.
 
-**Verified:** a genuine Gemini 3.5 Flash Lite discovery produced `capabilities/savings.json` in five API requests. That unchanged artifact returned another member's balance and handled missing members/accounts, ambiguous accounts, slow loading, unknown state, and a simulated operator takeover. See [evidence](evidence/README.md). The real-person handoff attempt timed out; the successful handoff evidence is explicitly an automated simulation using the same live session.
+**Verified:** a genuine Gemini 3.5 Flash Lite discovery produced `capabilities/savings.json` in five API requests. That unchanged artifact returned another member's balance and handled missing members/accounts, ambiguous accounts, slow loading, unknown state, and a simulated operator takeover. See [evidence](evidence/README.md). A subsequent user-operated handoff completed successfully; the curated handoff evidence currently remains the explicitly labeled automated simulation.
 
 ## Setup
 
@@ -85,7 +85,7 @@ In another terminal:
 DEMO_URL=http://127.0.0.1:4174 HEADED=1 npm run replay -- 12345 capabilities/savings.json
 ```
 
-The headed browser stops at “Session expired.” Open the local operator URL printed in the terminal. In the **same banking window**, click “Restore demo session,” then Resume in the operator page. No real credentials are involved. The operator page shows the run, step, capability, and reason. Premature or duplicate resume is rejected; cancellation and a two-minute timeout are supported. Automation verifies the resulting state before proceeding. The local operator link grants control and must not be published.
+The headed browser stops at “Session expired.” Open the local operator URL printed in the terminal. In the **same banking window**, click “Restore demo session,” then Resume in the operator page. No real credentials are involved. The operator page shows the run, step, capability, and reason. Premature or duplicate resume is rejected; cancellation and a five-minute timeout are supported. Automation verifies the resulting state before proceeding. The local operator link grants control and must not be published.
 
 Control events and manual click/change/submit/navigation event types are recorded without entered values. The operator controls a trusted local window; browser-chrome/OS actions and enforcement against someone directly clicking during automation are outside this minimal mechanism.
 
@@ -100,3 +100,29 @@ CLI runs write sanitized JSONL events under ignored `runs/`. Rich failure eviden
 The detailed design is in `ARCHITECTURE.md`; the implemented design and deliberate cuts are in `REPORT.md`. No remote publication or push has been performed.
 
 API references: [Playwright contexts](https://playwright.dev/docs/api/class-browsercontext), [Gemini structured output](https://ai.google.dev/gemini-api/docs/structured-output), [Gemini rate limits](https://ai.google.dev/gemini-api/docs/rate-limits).
+
+## Staff login and verification demo
+
+This local, fictional staff portal now offers a username/password screen and a second verification-code screen. Automation pauses while you authenticate in its existing browser. The original saved capability remains unchanged; replay makes no model calls.
+
+In one terminal, from the project directory:
+
+```sh
+PORT=4175 SCENARIO=login npm run demo
+```
+
+In another terminal:
+
+```sh
+DEMO_URL=http://127.0.0.1:4175 HEADED=1 npm run replay -- 12345 capabilities/savings.json
+```
+
+1. In the banking window, enter username **demo.teller** and password **DemoBank!2026**, then click **Sign in**.
+2. Enter demo code **482916**, then click **Verify and continue**. Leave the banking window on Member services.
+3. Open the printed Operator URL in a separate, regular browser window. Click **Resume**. The saved workflow retrieves the balance.
+
+The handoff allows five minutes; each verification challenge lasts two minutes. Wrong credentials/codes show errors. Three incorrect passwords impose a 30-second cooldown for that session; three incorrect codes require restarting sign-in. Early Resume keeps automation paused and offers Resume/Cancel again. Cancel or expiry ends the run. Interactive runs have a 15-minute overall deadline.
+
+For an additional interruption while opening the account, stop this demo server and restart it with `SCENARIO=login-expiry`. Run the same replay command: authenticate at entry, resume, then authenticate and resume a second time at the account screen. Each interruption prints a new Operator URL.
+
+Sessions use opaque, server-held state and HttpOnly, SameSite cookies. Credentials and codes are submitted by POST and are excluded from event logs. The fixed code is a simulation, not a real second factor: no authenticator integration, SMS, or email is involved. This localhost HTTP demo does not implement production banking authentication; accounts and session state are in memory and reset with the server. The original `normal` and `auth` scenarios remain available for reproducible prior evidence.
