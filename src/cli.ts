@@ -1,3 +1,4 @@
+import { TenantProfile, harborProfile } from "./profile.js";
 import { readFileSync, writeFileSync, renameSync, mkdirSync } from "node:fs";
 import { Events } from "./events.js";
 import { Session } from "./session.js";
@@ -13,13 +14,19 @@ const member_id = process.argv[3] ?? "12345";
 const file = process.argv[4] ?? "capabilities/savings.json";
 const events = new Events();
 const session = new Session(events, process.env.HEADED === "1");
+const profile = process.env.PROFILE_FILE
+  ? TenantProfile.parse(
+      JSON.parse(readFileSync(process.env.PROFILE_FILE, "utf8")),
+    )
+  : harborProfile;
 const surface = new Surface(
-  process.env.DEMO_URL ?? "http://127.0.0.1:4173",
+  process.env.DEMO_URL ?? profile.base_url,
   events,
   session,
   process.env.POLICY_FILE
     ? Policy.parse(JSON.parse(readFileSync(process.env.POLICY_FILE, "utf8")))
     : defaultPolicy,
+  profile,
 );
 try {
   await surface.open();

@@ -19,3 +19,5 @@ An additional walkthrough is saved in `human-login/`: a real person completed th
 Run `npm run verify:capability` to reproduce the seven replays without a model key. It preserves the original discovery evidence and updates replay logs/manifest. This command launches local servers itself. The checked-in capability also replays directly with the README commands.
 
 Raw model payloads, typed input values, credentials, live operator URLs, and financial outputs are excluded from event files. Error snapshots preserve tags/roles only. Tests compare returned outputs in memory before storing `output_checked: true`. Ignored `development/` logs come from test fixtures and are not submission discovery evidence.
+
+`tenant-reuse/` additionally contains four browser replays: two distinct members at each of Harbor and Summit, using identical saved capability bytes. Run `npm run verify:tenants` to reproduce them without model calls. Profiles are authored mappings; the manifest records the exact artifact hash and each profile digest. These runs do not replace the original discovery or human-login evidence.

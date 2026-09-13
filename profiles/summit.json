@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "tenant_id": "summit",
+  "application": "bank-demo-v1",
+  "layout_version": "1",
+  "base_url": "http://127.0.0.1:4176/",
+  "labels": {
+    "members": "Customer directory",
+    "member_id": "Customer number",
+    "search": "Find customer",
+    "open_member": "View customer",
+    "savings": "Savings deposit"
+  },
+  "extraction": {
+    "member": {
+      "by": "css",
+      "value": "[data-field=\"member\"]"
+    },
+    "account_kind": {
+      "by": "css",
+      "value": "[data-field=\"account_kind\"]"
+    },
+    "balance": {
+      "by": "css",
+      "value": "[data-field=\"balance\"]"
+    },
+    "currency": {
+      "by": "css",
+      "value": "[data-field=\"currency\"]"
+    }
+  }
+}

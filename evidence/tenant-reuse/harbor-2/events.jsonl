@@ -1,0 +1,8 @@
+{"run_id":"506b198e-da07-4db8-ac0e-12c891bfdd36","time":"2026-09-13T21:26:39.689Z","type":"profile_verified","profile_digest":"bd830cb5ec409773b971f361ae36a12ab07810a1d68d54595d99c319bcb13c26","tenant_id":"harbor"}
+{"run_id":"506b198e-da07-4db8-ac0e-12c891bfdd36","time":"2026-09-13T21:26:39.689Z","type":"replay_started","model_calls":0,"artifact_digest":"c36a6db9189e54b5b550849cf254343c13bce053323d0e1a04e65e4e4368dbc7"}
+{"run_id":"506b198e-da07-4db8-ac0e-12c891bfdd36","time":"2026-09-13T21:26:39.750Z","type":"step_completed","step":0,"action":"click"}
+{"run_id":"506b198e-da07-4db8-ac0e-12c891bfdd36","time":"2026-09-13T21:26:39.764Z","type":"step_completed","step":1,"action":"fill"}
+{"run_id":"506b198e-da07-4db8-ac0e-12c891bfdd36","time":"2026-09-13T21:26:39.821Z","type":"step_completed","step":2,"action":"click"}
+{"run_id":"506b198e-da07-4db8-ac0e-12c891bfdd36","time":"2026-09-13T21:26:39.879Z","type":"step_completed","step":3,"action":"click"}
+{"run_id":"506b198e-da07-4db8-ac0e-12c891bfdd36","time":"2026-09-13T21:26:39.936Z","type":"step_completed","step":4,"action":"click"}
+{"run_id":"506b198e-da07-4db8-ac0e-12c891bfdd36","time":"2026-09-13T21:26:39.944Z","type":"success","assisted":false,"model_calls":0}

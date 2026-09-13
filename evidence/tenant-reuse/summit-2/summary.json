@@ -1,0 +1,9 @@
+{
+  "tenant": "summit",
+  "run_id": "85d85e33-7e0a-4cbc-8253-55458b9286ac",
+  "artifact_sha256": "9aa764a60409c0b50c947ebd4111f4f5e91d72d988bf900efc89a21e44e58e97",
+  "profile_digest": "fb1ffaa2a2ba45557070617ec51f4a07ed73757f65f37122734ee67930587250",
+  "status": "success",
+  "model_calls": 0,
+  "output_checked": true
+}

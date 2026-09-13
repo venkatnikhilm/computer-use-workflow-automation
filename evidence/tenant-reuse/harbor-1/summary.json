@@ -1,0 +1,9 @@
+{
+  "tenant": "harbor",
+  "run_id": "9d52bf79-f2a6-4d62-9ba7-c358febfd6ef",
+  "artifact_sha256": "9aa764a60409c0b50c947ebd4111f4f5e91d72d988bf900efc89a21e44e58e97",
+  "profile_digest": "bd830cb5ec409773b971f361ae36a12ab07810a1d68d54595d99c319bcb13c26",
+  "status": "success",
+  "model_calls": 0,
+  "output_checked": true
+}

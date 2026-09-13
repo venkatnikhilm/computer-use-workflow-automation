@@ -5,6 +5,8 @@ export async function startDemo(
   port = 4173,
   scenario = "normal",
   now = Date.now,
+  tenant = "harbor",
+  layoutVersion = "1",
 ) {
   const auth = ["login", "login-expiry"].includes(scenario)
     ? createDemoAuth(scenario === "login-expiry", now)
@@ -47,15 +49,41 @@ export async function startDemo(
       res.end();
       return;
     }
+    if (tenant === "summit" && authBody == null) {
+      body = body
+        .replaceAll(">Members</a>", ">Customer directory</a>")
+        .replaceAll("Member ID <input", "Customer number <input")
+        .replaceAll(">Search</button>", ">Find customer</button>")
+        .replaceAll(">Open member</a>", ">View customer</a>")
+        .replaceAll(">Savings</a>", ">Savings deposit</a>");
+      body = body
+        .replaceAll('id="member-id"', 'data-field="member"')
+        .replaceAll('id="account-kind"', 'data-field="account_kind"')
+        .replaceAll('id="balance"', 'data-field="balance"')
+        .replaceAll('id="currency"', 'data-field="currency"');
+      body = body
+        .replace("<dl>", '<table aria-label="Deposit account details"><tbody>')
+        .replace("</dl>", "</tbody></table>")
+        .replaceAll("<dt>", '<tr><th scope="row">')
+        .replaceAll("</dt>", "</th>")
+        .replaceAll("<dd ", "<td ")
+        .replaceAll("</dd>", "</td></tr>");
+    }
     res.setHeader("Content-Type", "text/html; charset=utf-8");
     res.end(
-      `<!doctype html><html lang="en"><head><meta name="application" content="bank-demo-v1"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Harbor Credit Union · Staff Demo</title><style>body{font:16px system-ui;margin:0;background:#eef2f6;color:#172b41}header{background:#12354a;color:white;padding:24px max(24px,calc((100% - 800px)/2))}header strong{font-size:23px}header small{display:block;margin-top:6px;color:#bcd3df}main{max-width:720px;margin:40px auto;padding:32px;background:white;border:1px solid #d8e1e8;border-radius:12px}h1{font-size:28px}a,button{display:inline-block;margin:16px 10px 16px 0;padding:12px 20px;background:#126859;color:white;border:0;border-radius:6px;font:inherit;cursor:pointer}label{display:block;margin:20px 0;font-weight:600}input{display:block;box-sizing:border-box;padding:12px;margin-top:8px;width:100%;max-width:400px;border:1px solid #889ba9;border-radius:5px;font:inherit}input[type=hidden]{display:none}dd{margin:8px 0 20px;font-size:22px}aside{padding:18px;background:#eff5fa;line-height:1.8;border-radius:6px}footer{max-width:720px;margin:24px auto;padding:0 24px;color:#506477;font-size:14px}[role=alert]{background:#fff1ef;border-left:4px solid #b13529;padding:14px}.eyebrow{font-size:12px;letter-spacing:2px;color:#507487}.secondary{background:#e7eef3;color:#172b41}@media(max-width:800px){main{margin:20px;padding:24px}}</style></head><body><header><strong>Harbor Credit Union</strong><small>Staff banking · Fictional local demonstration</small></header><main>${body}</main><footer>Training environment. Synthetic member data only. No real banking transactions.</footer></body></html>`,
+      `<!doctype html><html lang="en"><head><meta name="application" content="bank-demo-v1"><meta name="tenant" content="${tenant === "summit" ? "summit" : "harbor"}"><meta name="layout-version" content="${layoutVersion === "1" ? "1" : "unsupported"}"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${tenant === "summit" ? "Summit Community Bank" : "Harbor Credit Union"} · Staff Demo</title><style>body{font:16px system-ui;margin:0;background:#eef2f6;color:#172b41}header{background:#12354a;color:white;padding:24px max(24px,calc((100% - 800px)/2))}header strong{font-size:23px}header small{display:block;margin-top:6px;color:#bcd3df}main{max-width:720px;margin:40px auto;padding:32px;background:white;border:1px solid #d8e1e8;border-radius:12px}h1{font-size:28px}a,button{display:inline-block;margin:16px 10px 16px 0;padding:12px 20px;background:#126859;color:white;border:0;border-radius:6px;font:inherit;cursor:pointer}label{display:block;margin:20px 0;font-weight:600}input{display:block;box-sizing:border-box;padding:12px;margin-top:8px;width:100%;max-width:400px;border:1px solid #889ba9;border-radius:5px;font:inherit}input[type=hidden]{display:none}table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:16px;border-bottom:1px solid #d8e1e8}dd{margin:8px 0 20px;font-size:22px}aside{padding:18px;background:#eff5fa;line-height:1.8;border-radius:6px}footer{max-width:720px;margin:24px auto;padding:0 24px;color:#506477;font-size:14px}[role=alert]{background:#fff1ef;border-left:4px solid #b13529;padding:14px}.eyebrow{font-size:12px;letter-spacing:2px;color:#507487}.secondary{background:#e7eef3;color:#172b41}@media(max-width:800px){main{margin:20px;padding:24px}}</style></head><body><header><strong>${tenant === "summit" ? "Summit Community Bank" : "Harbor Credit Union"}</strong><small>Staff banking · Fictional local demonstration</small></header><main>${body}</main><footer>Training environment. Synthetic member data only. No real banking transactions.</footer></body></html>`,
     );
   });
   await new Promise<void>((r) => server.listen(port, "127.0.0.1", r));
   return server;
 }
 if (import.meta.url === pathToFileURL(process.argv[1]).href) {
-  await startDemo(Number(process.env.PORT ?? 4173), process.env.SCENARIO);
+  await startDemo(
+    Number(process.env.PORT ?? 4173),
+    process.env.SCENARIO,
+    Date.now,
+    process.env.TENANT,
+    process.env.LAYOUT_VERSION,
+  );
   console.log(`Demo: http://127.0.0.1:${process.env.PORT ?? 4173}`);
 }

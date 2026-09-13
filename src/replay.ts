@@ -1,3 +1,4 @@
+import { digest } from "./profile.js";
 import { Capability, Input, RunError } from "./contracts.js";
 import type { ExecutionSurface } from "./surface.js";
 export async function replay(
@@ -31,7 +32,10 @@ export async function replay(
       step: forbidden,
     };
   }
-  surface.events.emit("replay_started", { model_calls: 0 });
+  surface.events.emit("replay_started", {
+    model_calls: 0,
+    artifact_digest: digest(raw),
+  });
   let step = 0;
   try {
     for (const action of capability.steps) {

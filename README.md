@@ -126,3 +126,25 @@ The handoff allows five minutes; each verification challenge lasts two minutes. 
 For an additional interruption while opening the account, stop this demo server and restart it with `SCENARIO=login-expiry`. Run the same replay command: authenticate at entry, resume, then authenticate and resume a second time at the account screen. Each interruption prints a new Operator URL.
 
 Sessions use opaque, server-held state and HttpOnly, SameSite cookies. Credentials and codes are submitted by POST and are excluded from event logs. The fixed code is a simulation, not a real second factor: no authenticator integration, SMS, or email is involved. This localhost HTTP demo does not implement production banking authentication; accounts and session state are in memory and reset with the server. The original `normal` and `auth` scenarios remain available for reproducible prior evidence.
+
+## One capability across two institutions
+
+`npm run verify:tenants` starts both local variants, runs the original discovered artifact for two members at each, checks outputs, and saves sanitized evidence under `evidence/tenant-reuse/`. It needs no model key and leaves the capability unchanged.
+
+Harbor uses the original labels and a description list. Summit uses Customer directory / Customer number / Find customer / View customer / Savings deposit, and an account table with different field attributes. The schema-validated JSON profiles in `profiles/` map known vendor locator slots to these differences. These mappings are authored configuration, not newly learned behavior. Routes and business rules are shared in this stage; this does not demonstrate frames, desktop access, or arbitrary vendor compatibility.
+
+To watch Summit, start its server:
+
+```sh
+PORT=4176 TENANT=summit npm run demo
+```
+
+Then run in another terminal:
+
+```sh
+PROFILE_FILE=profiles/summit.json HEADED=1 npm run replay -- 67890 capabilities/savings.json
+```
+
+If `.env` defines `DEMO_URL`, set `DEMO_URL=http://127.0.0.1:4176` on that replay command; the explicit URL overrides the profile default. Add `SCENARIO=login` to the server command to combine Summit with human login.
+
+Page markers must match the selected tenant and supported layout version. A wrong tenant or unknown layout stops before workflow actions. Profiles cannot contain steps, permissions, or route overrides; deployment policy remains authoritative after label translation. Label/role targets must still resolve uniquely, and outputs still require matching member/account identity. Profile and artifact digests in new run events hash their JSON serialization; the tenant evidence manifest additionally hashes the exact artifact file bytes.

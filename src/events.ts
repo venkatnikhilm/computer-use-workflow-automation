@@ -11,6 +11,9 @@ export class Events {
   emit(
     type: string,
     fields: {
+      profile_digest?: string;
+      artifact_digest?: string;
+      tenant_id?: string;
       step?: number;
       code?: string;
       action?: string;

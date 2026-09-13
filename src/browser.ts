@@ -1,3 +1,10 @@
+import {
+  TenantProfile,
+  harborProfile,
+  resolveProfileTarget,
+  digest,
+  type Profile,
+} from "./profile.js";
 import { chromium, Browser, Page, Locator } from "playwright";
 import {
   RunError,
@@ -22,9 +29,11 @@ export class Surface implements ExecutionSurface {
     readonly events: Events,
     readonly session: Session,
     readonly policy = defaultPolicy,
+    readonly profile: Profile = harborProfile,
   ) {
     this.deadline = Date.now() + (session.interactive ? 900000 : 180000);
     Policy.parse(policy);
+    TenantProfile.parse(profile);
   }
   allowed(raw: string) {
     try {
@@ -95,6 +104,10 @@ export class Surface implements ExecutionSurface {
     });
     await this.page.goto(this.base);
     await this.identity();
+    this.events.emit("profile_verified", {
+      profile_digest: digest(this.profile),
+      tenant_id: this.profile.tenant_id,
+    });
   }
   async identity() {
     if (
@@ -103,6 +116,18 @@ export class Surface implements ExecutionSurface {
         .getAttribute("content")) !== "bank-demo-v1"
     )
       throw new RunError("INCOMPATIBLE_APP");
+    if (
+      (await this.page
+        .locator('meta[name="tenant"]')
+        .getAttribute("content")) !== this.profile.tenant_id
+    )
+      throw new RunError("TENANT_MISMATCH");
+    if (
+      (await this.page
+        .locator('meta[name="layout-version"]')
+        .getAttribute("content")) !== this.profile.layout_version
+    )
+      throw new RunError("UNSUPPORTED_APP_VERSION");
   }
   check() {
     this.session.assertAutomation();
@@ -111,6 +136,7 @@ export class Surface implements ExecutionSurface {
       throw new RunError("POLICY_BLOCKED");
   }
   locator(target: z.infer<typeof Target>): Locator {
+    target = resolveProfileTarget(target, this.profile);
     if (target.by === "label")
       return this.page.getByLabel(target.value, { exact: true });
     if (target.by === "role" && target.role)
@@ -173,8 +199,8 @@ export class Surface implements ExecutionSurface {
     if (
       input &&
       path === "/member" &&
-      ((await this.page.locator("#member-id").count()) !== 1 ||
-        (await this.page.locator("#member-id").textContent()) !==
+      ((await this.locator(defaultExtraction.member).count()) !== 1 ||
+        (await this.locator(defaultExtraction.member).textContent()) !==
           input.member_id)
     )
       throw new RunError("IDENTITY_MISMATCH");
@@ -197,7 +223,7 @@ export class Surface implements ExecutionSurface {
     if (
       path === "/member" &&
       (await this.page
-        .getByRole("link", { name: "Savings", exact: true })
+        .getByRole("link", { name: this.profile.labels.savings, exact: true })
         .count()) > 1
     )
       throw new RunError("AMBIGUOUS_ACCOUNT");
@@ -224,6 +250,13 @@ export class Surface implements ExecutionSurface {
         "action",
       ),
     }));
+    const canonicalLabels: Record<string, string> = {
+      [this.profile.labels.members]: "Members",
+      [this.profile.labels.open_member]: "Open member",
+      [this.profile.labels.savings]: "Savings",
+      [this.profile.labels.search]: "Search",
+    };
+    const canonicalText = canonicalLabels[info.text ?? ""] ?? info.text;
     this.check();
     if (step.action === "fill") {
       if (
@@ -240,10 +273,10 @@ export class Surface implements ExecutionSurface {
         info.tag === "A" &&
         info.href &&
         this.allowed(new URL(info.href, this.base).href) &&
-        this.policy.link_labels.includes(info.text ?? "");
+        this.policy.link_labels.includes(canonicalText ?? "");
       const safeSearch =
         info.tag === "BUTTON" &&
-        info.text === "Search" &&
+        canonicalText === "Search" &&
         info.action === this.policy.search_form;
       if (!safeLink && !safeSearch) throw new RunError("POLICY_BLOCKED");
       const before = this.page.url();
@@ -276,7 +309,7 @@ export class Surface implements ExecutionSurface {
           : {
               by: "role" as const,
               role: info.tag === "A" ? ("link" as const) : ("button" as const),
-              value: info.text!,
+              value: canonicalText!,
             },
       ...(step.action === "fill" ? { input: "member_id" as const } : {}),
     };
