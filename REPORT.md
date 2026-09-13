@@ -30,6 +30,8 @@ Two authored tenant profiles now reuse the exact discovered artifact. Harbor has
 
 # Escalation & handoff
 
+Headed CLI runs expose a local dashboard showing tenant, progress, authentication guidance, and final status. It delegates Resume/Cancel to the existing handoff controller and shows no financial outputs. The same dashboard spans interventions and remains available for 60 seconds after completion.
+
 An authentication blocker, stuck discovery, or supported replay blocker yields an intervention containing capability, run, step, reason, and sanitized state evidence. Automation stops at a settled action boundary. A localhost operator page exposes Resume/Cancel while the same headed browser stays open. The operator resolves the blocker there; no fresh browser loses entered context. Resume passes through validation; premature/duplicate submissions are rejected. Failed or timed-out interventions terminate, and a late validation callback cannot restore automation ownership.
 
 The current runner executes actions sequentially. Gateway ownership checks reject automated actions during human control; direct local mouse/keyboard access is a trusted-operator boundary rather than remote input fencing. Capture-phase instrumentation records manual click/change/submit/navigation event types without entered values. Browser chrome and OS actions are outside that capture. The checkpoint after resume prevents repeating completed work. An assisted discovery is not published because manual steps are not compiled into a reusable artifact.

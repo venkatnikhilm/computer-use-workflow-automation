@@ -4,6 +4,9 @@ import { RunError } from "./contracts.js";
 import { Events } from "./events.js";
 export class Session {
   operatorURL = "";
+  stepLabels: string[] = [];
+  guidance: () => Promise<string> = async () =>
+    "Resolve the blocker in the banking window, then click Resume here.";
   owner: "automation" | "human" | "validating" | "terminal" = "automation";
   step = 0;
   assisted = false;

@@ -14,6 +14,19 @@ export async function replay(
   }
   const capability = parsedCapability.data;
   const input = parsedInput.data;
+  surface.session.stepLabels = capability.steps.map((s) => {
+    const labels: Record<string, string> = {
+      Members: "Open member directory",
+      "Member ID": "Enter member identifier",
+      Search: "Search for member",
+      "Open member": "Open member details",
+      Savings: "Open savings account",
+    };
+    return (
+      labels[s.target.value] ??
+      (s.action === "fill" ? "Fill a field" : "Click a control")
+    );
+  });
   const forbidden = capability.steps.findIndex(
     (action) =>
       !surface.policy.actions.includes(action.action) ||

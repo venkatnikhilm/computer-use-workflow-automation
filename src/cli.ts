@@ -1,3 +1,4 @@
+import { Dashboard } from "./dashboard.js";
 import { TenantProfile, harborProfile } from "./profile.js";
 import { readFileSync, writeFileSync, renameSync, mkdirSync } from "node:fs";
 import { Events } from "./events.js";
@@ -28,7 +29,11 @@ const surface = new Surface(
     : defaultPolicy,
   profile,
 );
+const dashboard = session.interactive
+  ? new Dashboard(events, session, profile.tenant_id)
+  : undefined;
 try {
+  if (dashboard) console.log(`Dashboard: ${await dashboard.start()}`);
   await surface.open();
   if (mode === "discover") {
     const { discover } = await import("./discovery.js");
@@ -62,4 +67,10 @@ try {
   process.exitCode = 1;
 } finally {
   await surface.close();
+  if (dashboard) {
+    dashboard.finish();
+    console.log(
+      "Dashboard result available for 60 seconds; then this command exits.",
+    );
+  }
 }

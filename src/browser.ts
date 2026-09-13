@@ -34,6 +34,30 @@ export class Surface implements ExecutionSurface {
     this.deadline = Date.now() + (session.interactive ? 900000 : 180000);
     Policy.parse(policy);
     TenantProfile.parse(profile);
+    this.session.guidance = async () => {
+      if (this.violation || !this.allowed(this.page.url()))
+        return "The browser left an allowed destination. Cancel this run and restart.";
+      if (
+        await this.page
+          .getByRole("heading", { name: "Verify your identity", exact: true })
+          .count()
+      )
+        return "Complete verification in the banking window, then return here and click Resume.";
+      if (await this.page.locator("[data-auth-required]").count())
+        return "Complete sign-in and verification in the banking window. Leave it on the returned screen, then click Resume here.";
+      if (
+        await this.page
+          .getByRole("heading", { name: "Session expired", exact: true })
+          .count()
+      )
+        return "Restore the demo session in the banking window, then click Resume here.";
+      const blocker = [...this.events.history]
+        .reverse()
+        .find((e) => e.type === "intervention");
+      if (blocker?.code !== "AUTH_REQUIRED")
+        return "Resolve the blocked workflow step in the banking window, then click Resume to validate it. Cancel if it cannot be resolved.";
+      return "The login screen is no longer visible. Leave the banking window on the expected workflow screen and click Resume to validate it.";
+    };
   }
   allowed(raw: string) {
     try {

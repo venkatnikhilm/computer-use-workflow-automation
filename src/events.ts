@@ -3,6 +3,7 @@ import { join } from "node:path";
 import { randomUUID } from "node:crypto";
 export class Events {
   readonly id = randomUUID();
+  readonly history: { type: string; step?: number; code?: string }[] = [];
   readonly directory: string;
   constructor(root = "runs") {
     this.directory = join(root, this.id);
@@ -26,6 +27,8 @@ export class Events {
       retry_after_ms?: number;
     } = {},
   ) {
+    this.history.push({ type, step: fields.step, code: fields.code });
+    if (this.history.length > 200) this.history.shift();
     appendFileSync(
       join(this.directory, "events.jsonl"),
       JSON.stringify({
