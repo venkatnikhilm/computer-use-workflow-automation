@@ -4,6 +4,12 @@ An LLM learns a member lookup through a real browser. The resulting typed capabi
 
 **Verified:** a genuine Gemini 3.5 Flash Lite discovery produced `capabilities/savings.json` in five API requests. That unchanged artifact returned another member's balance and handled missing members/accounts, ambiguous accounts, slow loading, unknown state, and a simulated operator takeover. See [evidence](evidence/README.md). A subsequent user-operated login and verification handoff also completed successfully; its original sanitized logs are preserved in [human-login evidence](evidence/human-login/summary.json).
 
+## Reviewer starting point
+
+Read [REPORT.md](REPORT.md) for the implemented design and trade-offs, and [REVIEW.md](REVIEW.md) for requirement coverage and explicit limits. The original proposal in ARCHITECTURE.md is not a description of every implemented feature.
+
+After setup, `npm run verify:capability` demonstrates seven outcomes and `npm run verify:tenants` demonstrates reuse across two variants, without a model key. Genuine discovery evidence is already checked in. To observe human intervention, use the staff-login commands below and open the **Dashboard URL** in a separate regular browser window.
+
 ## Setup
 
 Requires Node.js 22+ and a Chromium installation:
@@ -85,7 +91,7 @@ In another terminal:
 DEMO_URL=http://127.0.0.1:4174 HEADED=1 npm run replay -- 12345 capabilities/savings.json
 ```
 
-The headed browser stops at “Session expired.” Open the local operator URL printed in the terminal. In the **same banking window**, click “Restore demo session,” then Resume in the operator page. No real credentials are involved. The operator page shows the run, step, capability, and reason. Premature or duplicate resume is rejected; cancellation and a five-minute timeout are supported. Automation verifies the resulting state before proceeding. The local operator link grants control and must not be published.
+The headed browser stops at “Session expired.” Open the Dashboard URL printed in the terminal in a separate regular browser window. In the **same banking window**, click “Restore demo session,” then Resume in the dashboard. No real credentials are involved. The operator page shows the run, step, capability, and reason. Premature or duplicate resume is rejected; cancellation and a five-minute timeout are supported. Automation verifies the resulting state before proceeding. The local operator link grants control and must not be published.
 
 Control events and manual click/change/submit/navigation event types are recorded without entered values. The operator controls a trusted local window; browser-chrome/OS actions and enforcement against someone directly clicking during automation are outside this minimal mechanism.
 
@@ -119,7 +125,7 @@ DEMO_URL=http://127.0.0.1:4175 HEADED=1 npm run replay -- 12345 capabilities/sav
 
 1. In the banking window, enter username **demo.teller** and password **DemoBank!2026**, then click **Sign in**.
 2. Enter demo code **482916**, then click **Verify and continue**. Leave the banking window on Member services.
-3. Open the printed Operator URL in a separate, regular browser window. Click **Resume**. The saved workflow retrieves the balance.
+3. Open the printed **Dashboard URL** in a separate, regular browser window. Click **Resume**. The saved workflow retrieves the balance.
 
 The handoff allows five minutes; each verification challenge lasts two minutes. Wrong credentials/codes show errors. Three incorrect passwords impose a 30-second cooldown for that session; three incorrect codes require restarting sign-in. Early Resume keeps automation paused and offers Resume/Cancel again. Cancel or expiry ends the run. Interactive runs have a 15-minute overall deadline.
 
@@ -158,3 +164,5 @@ When authentication blocks progress, the dashboard explains whether sign-in or v
 The final status remains available for 60 seconds after completion, then the command exits. Financial outputs remain in the invoking terminal; they are not added to the dashboard or logs. The dashboard URL grants local operator control and should not be shared. No additional model calls are involved.
 
 The final requirement-by-requirement review, validation, and scope limits are recorded in [REVIEW.md](REVIEW.md).
+
+If a demo server was started before a code update, stop and restart it before replay. Older pages without tenant/version markers are rejected explicitly.

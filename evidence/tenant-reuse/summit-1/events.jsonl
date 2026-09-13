@@ -1,8 +1,8 @@
-{"run_id":"746f8ea8-737d-4b94-b069-d49812eaebc0","time":"2026-09-13T21:26:40.062Z","type":"profile_verified","profile_digest":"fb1ffaa2a2ba45557070617ec51f4a07ed73757f65f37122734ee67930587250","tenant_id":"summit"}
-{"run_id":"746f8ea8-737d-4b94-b069-d49812eaebc0","time":"2026-09-13T21:26:40.062Z","type":"replay_started","model_calls":0,"artifact_digest":"c36a6db9189e54b5b550849cf254343c13bce053323d0e1a04e65e4e4368dbc7"}
-{"run_id":"746f8ea8-737d-4b94-b069-d49812eaebc0","time":"2026-09-13T21:26:40.122Z","type":"step_completed","step":0,"action":"click"}
-{"run_id":"746f8ea8-737d-4b94-b069-d49812eaebc0","time":"2026-09-13T21:26:40.136Z","type":"step_completed","step":1,"action":"fill"}
-{"run_id":"746f8ea8-737d-4b94-b069-d49812eaebc0","time":"2026-09-13T21:26:40.193Z","type":"step_completed","step":2,"action":"click"}
-{"run_id":"746f8ea8-737d-4b94-b069-d49812eaebc0","time":"2026-09-13T21:26:40.252Z","type":"step_completed","step":3,"action":"click"}
-{"run_id":"746f8ea8-737d-4b94-b069-d49812eaebc0","time":"2026-09-13T21:26:40.308Z","type":"step_completed","step":4,"action":"click"}
-{"run_id":"746f8ea8-737d-4b94-b069-d49812eaebc0","time":"2026-09-13T21:26:40.316Z","type":"success","assisted":false,"model_calls":0}
+{"run_id":"c18b14a7-24c0-4210-94f1-9990aecc4843","time":"2026-09-13T21:28:49.639Z","type":"profile_verified","profile_digest":"fb1ffaa2a2ba45557070617ec51f4a07ed73757f65f37122734ee67930587250","tenant_id":"summit"}
+{"run_id":"c18b14a7-24c0-4210-94f1-9990aecc4843","time":"2026-09-13T21:28:49.639Z","type":"replay_started","model_calls":0,"artifact_digest":"c36a6db9189e54b5b550849cf254343c13bce053323d0e1a04e65e4e4368dbc7"}
+{"run_id":"c18b14a7-24c0-4210-94f1-9990aecc4843","time":"2026-09-13T21:28:49.696Z","type":"step_completed","step":0,"action":"click"}
+{"run_id":"c18b14a7-24c0-4210-94f1-9990aecc4843","time":"2026-09-13T21:28:49.709Z","type":"step_completed","step":1,"action":"fill"}
+{"run_id":"c18b14a7-24c0-4210-94f1-9990aecc4843","time":"2026-09-13T21:28:49.768Z","type":"step_completed","step":2,"action":"click"}
+{"run_id":"c18b14a7-24c0-4210-94f1-9990aecc4843","time":"2026-09-13T21:28:49.825Z","type":"step_completed","step":3,"action":"click"}
+{"run_id":"c18b14a7-24c0-4210-94f1-9990aecc4843","time":"2026-09-13T21:28:49.882Z","type":"step_completed","step":4,"action":"click"}
+{"run_id":"c18b14a7-24c0-4210-94f1-9990aecc4843","time":"2026-09-13T21:28:49.890Z","type":"success","assisted":false,"model_calls":0}
