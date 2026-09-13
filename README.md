@@ -1,12 +1,12 @@
 # Capability Lab
 
-A local browser-automation prototype: discover a savings-balance lookup through a model, save typed instructions, and replay them without model calls.
+An LLM learns a member lookup through a real browser. The resulting typed capability replays with new inputs without calling a model. The local target is a fictional, server-rendered banking application with no automation-only test IDs.
 
-**Status:** browser replay and automated same-session handoff tests are implemented. The free-tier API key is configured and a small provider request succeeded, but live discovery attempts received HTTP 503, including bounded retries. Genuine discovery evidence remains pending provider availability. `capabilities/development.json` is hand-authored test input, not LLM-generated evidence. This is an initial implementation, not a finished assignment submission.
+**Verified:** a genuine Gemini 3.5 Flash Lite discovery produced `capabilities/savings.json` in five API requests. That unchanged artifact returned another member's balance and handled missing members/accounts, ambiguous accounts, slow loading, unknown state, and a simulated operator takeover. See [evidence](evidence/README.md). The real-person handoff attempt timed out; the successful handoff evidence is explicitly an automated simulation using the same live session.
 
 ## Setup
 
-Requires Node.js 22+.
+Requires Node.js 22+ and a Chromium installation:
 
 ```sh
 npm ci
@@ -15,70 +15,88 @@ npm run check
 npm test
 ```
 
-## Run without model services
+No model key is required for tests or replay. All account data is fictional. This project is a take-home demonstration, not a production banking integration.
 
-Start the fictional banking app in one terminal:
+## Start with the saved capability — no model calls
+
+Terminal 1:
 
 ```sh
 npm run demo
 ```
 
-In another terminal:
+Terminal 2:
 
 ```sh
-npm run replay -- 67890 capabilities/development.json
-npm run replay -- 99999 capabilities/development.json
-npm run replay -- 11111 capabilities/development.json
-npm run replay -- 22222 capabilities/development.json
-```
-
-The results are success, member not found, no savings account, and ambiguous savings account respectively. All values are fictional. Outputs appear in the invoking terminal; persisted events omit member IDs and balances.
-
-## Genuine discovery and replay
-
-Copy `.env.example` to `.env` and configure `GEMINI_API_KEY` and `GEMINI_MODEL`. Use an AI Studio **free-tier project without paid billing**, in accordance with the zero-spend constraint. The program does not enable billing, change providers, or fall back to a paid model. A model name alone does not guarantee free usage: billing is determined by the API project. Quota/API failures stop the run.
-
-```sh
-npm run discover -- 12345 capabilities/savings.json
 npm run replay -- 67890 capabilities/savings.json
+npm run replay -- 99999 capabilities/savings.json
 ```
 
-The model sees current synthetic page observations and chooses the controls. It is not given a prewritten action sequence. Successful actions become the artifact; final account/member identity and output validation are authored application checks. Live discovery has been attempted but has not completed successfully (provider HTTP 503). Do not label development fixtures as discovery evidence.
+The first returns the fictional balance `2450.75 USD`; the second returns the business outcome `MEMBER_NOT_FOUND`. Inputs are five-character strings so leading zeros are preserved. The application also has member `11111` without savings and `22222` with ambiguous savings accounts.
 
-## Model request controls
+Run all seven evidence scenarios, with an isolated local server per scenario:
 
-No live model requests are part of `npm test`. Tests inject mocked responses and a fake clock; the integration test also mocks the provider.
+```sh
+npm run verify:capability
+```
 
-Defaults are six total dispatched requests per discovery run, at least 15 seconds between request starts, zero automatic retries, and a 30-second timeout per request including reading its body. Optional retries for HTTP 502/503/504 consume the same total budget and obey pacing. HTTP 429 stops immediately and is never automatically retried. Transport failures stop as well. Pacing happens before the request timeout starts.
+This executes the checked-in **genuinely discovered artifact**, uses no model, and refreshes the replay evidence. The handoff scenario uses an explicitly simulated operator. The original live discovery events are preserved.
 
-Configure `MODEL_MAX_CALLS`, `MODEL_MIN_INTERVAL_MS`, `MODEL_MAX_RETRIES`, and `MODEL_TIMEOUT_MS` in `.env`. These are **per-process/run safeguards**, not a project-wide quota tracker: restarting or running multiple processes creates independent budgets. Fifteen seconds is a conservative starting interval, not a claim that it matches your account's rate limit. Check AI Studio before another live attempt.
+## Discover a new capability
 
-Events count every dispatch, including failures and retries. Rate-limit diagnostics retain only HTTP status, a derived quota scope (`per_minute`, `per_day`, `mixed`, or `unknown`), and a bounded retry delay when available. Raw provider messages, quota IDs, project identifiers and credentials are discarded. `MODEL_RATE_LIMITED` does not assert that the daily quota is exhausted. Older logs with `FREE_QUOTA_EXHAUSTED` used an overly broad classification and cannot establish which limit was reached.
+Copy `.env.example` to `.env`, and set `GEMINI_API_KEY` and `GEMINI_MODEL`. Use an AI Studio free-tier project with paid billing disabled for zero spending. The model name alone does not determine billing. Keep `.env` out of Git.
+
+With the demo already running:
+
+```sh
+npm run discover -- 12345 capabilities/new-savings.json
+npm run replay -- 67890 capabilities/new-savings.json
+```
+
+Discovery receives a natural-language goal and live page observations. It chooses individual controls, not a prewritten action sequence. Configure the goal with `GOAL` and target with `DEMO_URL`:
+
+```sh
+GOAL="Look up the requested member and read their current savings balance and currency" DEMO_URL=http://127.0.0.1:4173 npm run discover -- 12345 capabilities/new-savings.json
+```
+
+The supported capability contract is specifically the savings lookup; arbitrary banking workflows are outside this slice. Discovery records successful UI actions and verifies completion deterministically after each action. The builder adds an authored extraction/condition contract; it does not claim to have learned error states that were never encountered. A successful lookup normally takes five model requests.
+
+The saved artifact contains parameter bindings, typed output declarations, explicit extraction targets, step checkpoints, a versioned application condition profile, and discovery provenance. Replay imports an `ExecutionSurface` interface rather than Playwright or a model client. The browser adapter enforces the actual control policy and rejects ambiguous matches.
+
+## Request controls and cost
+
+Defaults: six total API dispatches per run, 15 seconds between request starts, no automatic retries, and a 30-second per-request timeout including body consumption. Change these with `MODEL_MAX_CALLS`, `MODEL_MIN_INTERVAL_MS`, `MODEL_MAX_RETRIES`, and `MODEL_TIMEOUT_MS`. Optional 502/503/504 retries consume the same budget. A 429 or transport failure stops the run.
+
+Budgets are per process/run; they are not a project-wide quota tracker. Check your account's limits before a live run. Logs retain HTTP status, a derived quota scope when available, and bounded retry delay; they omit raw provider messages and credentials. Historical `FREE_QUOTA_EXHAUSTED` events were overly broad and do not prove daily quota exhaustion.
+
+Tests mock model responses. They never load `.env` or send live model requests. The included development artifact is labelled `development-fixture` and is not used to claim genuine discovery.
 
 ## Human takeover
 
-Stop the demo server, then restart it with an authentication blocker:
+Use a separate demo port so the normal demo can remain running:
 
 ```sh
-SCENARIO=auth npm run demo
+PORT=4174 SCENARIO=auth npm run demo
 ```
 
-Run a visible session:
+In another terminal:
 
 ```sh
-HEADED=1 npm run replay -- 12345 capabilities/development.json
+DEMO_URL=http://127.0.0.1:4174 HEADED=1 npm run replay -- 12345 capabilities/savings.json
 ```
 
-When paused, the terminal prints a local operator URL. Open it manually. In the **existing banking browser**, click “Restore demo session,” then click Resume in the operator page. No real credentials are needed. Premature resume returns a conflict. Automation checks identity and extracts the balance after the handoff. Cancel and a two-minute intervention timeout are supported. The operator URL grants local control and is not persisted in evidence.
+The headed browser stops at “Session expired.” Open the local operator URL printed in the terminal. In the **same banking window**, click “Restore demo session,” then Resume in the operator page. No real credentials are involved. The operator page shows the run, step, capability, and reason. Premature or duplicate resume is rejected; cancellation and a two-minute timeout are supported. Automation verifies the resulting state before proceeding. The local operator link grants control and must not be published.
 
-`npm test` exercises this mechanism using a **simulated operator** acting through the same browser. Those test logs are not evidence that a real person performed takeover.
+Control events and manual click/change/submit/navigation event types are recorded without entered values. The operator controls a trusted local window; browser-chrome/OS actions and enforcement against someone directly clicking during automation are outside this minimal mechanism.
 
-Other scenarios: `SCENARIO=slow` and `SCENARIO=unknown` when starting the demo. Scenario selection is server configuration, not an agent-accessible shortcut.
+## Safety, errors, and evidence
 
-## Evidence and limits
+`POLICY_FILE` can load a validated JSON policy; see `src/policy.ts`. Routes and actual controls are checked independently of model instructions. Transfers and unknown actions are blocked. Browser requests outside the allowed origin/routes, WebSockets, service workers, and new windows are blocked or rejected. This is not a full network sandbox.
 
-CLI events and structural failure snapshots go under ignored `runs/<run-id>/`. Test evidence goes under `evidence/development/`. Its README identifies the provenance. Screenshots and raw DOM text are intentionally not persisted; structural failure snapshots contain tags and roles. Recorded manual actions contain event types, not entered values.
+Member-not-found, no savings account, and ambiguous accounts are business outcomes, checked against the correct screen/member. Loading is bounded; dispatched clicks are never blindly retried. Unknown states return structured failures or request bounded intervention when running headed. Assisted discoveries are not published as unattended capabilities because manual steps are not compiled.
 
-The interpreter currently supports `click` and parameter-bound `fill`, with serialized navigation/field postconditions, authored output extraction, and a fixed application condition profile. It does not yet serialize arbitrary conditions, tenant overrides, or extraction targets. A JSON policy override can be supplied with `POLICY_FILE`; its schema is in `src/policy.ts`. The browser wrapper is the current surface boundary; a general adapter interface is future work. Auth blockers, unavailable controls before dispatch, and unmet final checkpoints support bounded intervention. Discovery also escalates repeated failure/no progress; assisted discoveries require a fresh recording because manual steps are not compiled into the artifact. Other unknown states return failure. These are explicit remaining gaps against the broader architecture.
+CLI runs write sanitized JSONL events under ignored `runs/`. Rich failure evidence is a structural DOM snapshot containing tags and roles, without raw text or field values. Sensitive outputs go to the invoking terminal, not persisted event logs. Only fictional page data is sent to the provider; using real regulated data would need additional observation redaction and deployment controls.
 
-References used for API implementation: [Playwright browser contexts](https://playwright.dev/docs/api/class-browsercontext), [Gemini structured output](https://ai.google.dev/gemini-api/docs/structured-output), and [Gemini pricing](https://ai.google.dev/gemini-api/docs/pricing).
+The detailed design is in `ARCHITECTURE.md`; the implemented design and deliberate cuts are in `REPORT.md`. No remote publication or push has been performed.
+
+API references: [Playwright contexts](https://playwright.dev/docs/api/class-browsercontext), [Gemini structured output](https://ai.google.dev/gemini-api/docs/structured-output), [Gemini rate limits](https://ai.google.dev/gemini-api/docs/rate-limits).
