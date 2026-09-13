@@ -27,7 +27,7 @@ export async function discover(goal: string, args: unknown, surface: Surface) {
     failures = 0;
   };
   for (let iteration = 0; iteration < 20; iteration++) {
-    await surface.conditions();
+    await surface.conditions(input);
     const observation = await surface.observe();
     const state = JSON.stringify(observation);
     const visits = (seen.get(state) ?? 0) + 1;

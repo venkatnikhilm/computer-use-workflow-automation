@@ -9,6 +9,24 @@ export async function replay(raw: unknown, args: unknown, surface: Surface) {
   }
   const capability = parsedCapability.data;
   const input = parsedInput.data;
+  const forbidden = capability.steps.findIndex(
+    (action) =>
+      !surface.policy.actions.includes(action.action) ||
+      (action.postcondition?.kind === "path" &&
+        !surface.policy.routes.includes(action.postcondition.value)),
+  );
+  if (forbidden !== -1) {
+    surface.events.emit("failure", {
+      code: "POLICY_PREFLIGHT_FAILED",
+      step: forbidden,
+      model_calls: 0,
+    });
+    return {
+      status: "failure",
+      code: "POLICY_PREFLIGHT_FAILED",
+      step: forbidden,
+    };
+  }
   surface.events.emit("replay_started", { model_calls: 0 });
   let step = 0;
   try {

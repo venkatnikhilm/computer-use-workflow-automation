@@ -1,11 +1,16 @@
 import { z } from "zod";
-export const Target = z
-  .object({
-    by: z.enum(["label", "role", "css"]),
-    value: z.string().min(1).max(160),
-    role: z.enum(["button", "link", "heading"]).optional(),
-  })
-  .strict();
+const targetValue = z.string().trim().min(1).max(160);
+export const Target = z.discriminatedUnion("by", [
+  z.object({ by: z.literal("label"), value: targetValue }).strict(),
+  z.object({ by: z.literal("css"), value: targetValue }).strict(),
+  z
+    .object({
+      by: z.literal("role"),
+      value: targetValue,
+      role: z.enum(["button", "link", "heading"]),
+    })
+    .strict(),
+]);
 export const Step = z
   .object({
     action: z.enum(["fill", "click"]),
@@ -58,7 +63,10 @@ export const Capability = z
       c.steps.some(
         (s) =>
           (s.action === "fill") !== (s.input === "member_id") ||
-          !s.postcondition,
+          !s.postcondition ||
+          (s.action === "fill" &&
+            s.postcondition.kind !== "field_equals_input") ||
+          (s.action === "click" && s.postcondition.kind !== "path"),
       )
     )
       ctx.addIssue({

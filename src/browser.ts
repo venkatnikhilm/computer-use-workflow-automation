@@ -113,7 +113,7 @@ export class Surface {
     if (target.by === "css") return this.page.locator(target.value);
     throw new RunError("INVALID_TARGET");
   }
-  async conditions() {
+  async conditions(input?: { member_id: string }) {
     this.check();
     if (
       await this.page
@@ -129,21 +129,41 @@ export class Surface {
             "savings",
       );
     }
+    this.check();
+    const current = new URL(this.page.url());
+    const path = current.pathname;
     if (
-      await this.page
+      input &&
+      ["/results", "/member", "/account"].includes(path) &&
+      current.searchParams.get("member") !== input.member_id
+    )
+      throw new RunError("IDENTITY_MISMATCH");
+    if (
+      input &&
+      path === "/member" &&
+      ((await this.page.locator("#member-id").count()) !== 1 ||
+        (await this.page.locator("#member-id").textContent()) !==
+          input.member_id)
+    )
+      throw new RunError("IDENTITY_MISMATCH");
+    if (
+      path === "/results" &&
+      (await this.page
         .getByRole("status")
         .filter({ hasText: /^Member not found$/ })
-        .count()
+        .count())
     )
       throw new RunError("MEMBER_NOT_FOUND");
     if (
-      await this.page
+      path === "/member" &&
+      (await this.page
         .getByRole("status")
         .filter({ hasText: /^No savings account$/ })
-        .count()
+        .count())
     )
       throw new RunError("NO_SAVINGS_ACCOUNT");
     if (
+      path === "/member" &&
       (await this.page
         .getByRole("link", { name: "Savings", exact: true })
         .count()) > 1
@@ -154,7 +174,7 @@ export class Surface {
     this.check();
     if (!this.policy.actions.includes(step.action))
       throw new RunError("POLICY_BLOCKED");
-    await this.conditions();
+    await this.conditions(input);
     const target = this.locator(step.target);
     const count = await target.count();
     if (count !== 1)
@@ -230,7 +250,7 @@ export class Surface {
     };
   }
   async complete(input: { member_id: string }) {
-    await this.conditions();
+    await this.conditions(input);
     return this.verifyOutput(input);
   }
   async verifyOutput(input: { member_id: string }) {

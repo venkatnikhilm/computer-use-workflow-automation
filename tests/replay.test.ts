@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
-import { readFileSync, writeFileSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { startDemo } from "../demo/server.js";
 import { Capability, Input } from "../src/contracts.js";
 import { Surface } from "../src/browser.js";
@@ -137,10 +137,6 @@ test("replay source has no discovery or provider import", () => {
   const text = readFileSync("src/replay.ts", "utf8");
   assert(!/from.*(?:discovery|google|gemini|openai)/.test(text));
 });
-writeFileSync(
-  "capabilities/development.json",
-  JSON.stringify(fixture, null, 2),
-);
 
 test("same-session handoff validates resume and captures operator actions (simulated operator)", async () => {
   process.env.TEST_HEADLESS = "1";
@@ -265,6 +261,108 @@ test("discovery wiring with mocked provider generates a parameterized artifact (
     else process.env.GEMINI_API_KEY = oldKey;
     if (oldModel === undefined) delete process.env.GEMINI_MODEL;
     else process.env.GEMINI_MODEL = oldModel;
+    await surface.close();
+    await new Promise<void>((r) => server.close(() => r()));
+  }
+});
+
+test("artifact rejects incomplete targets and action/checkpoint mismatches", () => {
+  const base = Capability.parse(fixture);
+  for (const target of [
+    { by: "role", value: "Members" },
+    { by: "label", value: " " },
+    { by: "css", value: "a", role: "link" },
+  ]) {
+    assert.throws(() =>
+      Capability.parse({
+        ...base,
+        steps: [{ ...base.steps[0], target }, ...base.steps.slice(1)],
+      }),
+    );
+  }
+  for (const [index, postcondition] of [
+    [0, { kind: "field_equals_input", input: "member_id" }],
+    [1, { kind: "path", value: "/members" }],
+  ] as const) {
+    assert.throws(() =>
+      Capability.parse({
+        ...base,
+        steps: base.steps.map((step, i) =>
+          i === index ? { ...step, postcondition } : step,
+        ),
+      }),
+    );
+  }
+});
+
+test("policy preflight rejects a later forbidden step before performing any actions", async () => {
+  const events = new Events("evidence/development");
+  const surface = new Surface(
+    "http://127.0.0.1:4173",
+    events,
+    new Session(events, false),
+    {
+      routes: ["/", "/members"],
+      actions: ["click", "fill"],
+      link_labels: ["Members"],
+      fill_names: ["member"],
+      search_form: "/results",
+    },
+  );
+  let actions = 0;
+  surface.act = async () => {
+    actions++;
+    throw Error("Must not dispatch");
+  };
+  const result = await replay(fixture, { member_id: "12345" }, surface);
+  assert.equal(result.code, "POLICY_PREFLIGHT_FAILED");
+  assert.equal(actions, 0);
+  const malformed = await replay(
+    { ...fixture, schema_version: 99 },
+    { member_id: "12345" },
+    surface,
+  );
+  assert.equal(malformed.code, "INVALID_INVOCATION");
+  assert.equal(actions, 0);
+});
+
+test("business outcomes are scoped to the requested member and correct screen", async () => {
+  const server = await startDemo(0);
+  const a = server.address();
+  assert(a && typeof a !== "string");
+  const events = new Events("evidence/development");
+  const surface = new Surface(
+    `http://127.0.0.1:${a.port}`,
+    events,
+    new Session(events, false),
+  );
+  try {
+    await surface.open();
+    await surface.page.evaluate(() => {
+      const p = document.createElement("p");
+      p.setAttribute("role", "status");
+      p.textContent = "Member not found";
+      document.body.append(p);
+    });
+    await surface.conditions({ member_id: "12345" }); // Unrelated homepage status is not a search outcome.
+    await surface.page.goto(surface.base + "/member?member=11111");
+    await assert.rejects(
+      () => surface.conditions({ member_id: "12345" }),
+      /IDENTITY_MISMATCH/,
+    );
+    await assert.rejects(
+      () => surface.conditions({ member_id: "11111" }),
+      /NO_SAVINGS_ACCOUNT/,
+    );
+    await surface.page.goto(surface.base + "/member?member=12345");
+    await surface.page
+      .locator("#member-id")
+      .evaluate((el) => (el.textContent = "67890"));
+    await assert.rejects(
+      () => surface.conditions({ member_id: "12345" }),
+      /IDENTITY_MISMATCH/,
+    );
+  } finally {
     await surface.close();
     await new Promise<void>((r) => server.close(() => r()));
   }
