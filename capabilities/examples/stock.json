@@ -1,0 +1,205 @@
+{
+  "schema_version": 2,
+  "id": "get_stock_status",
+  "version": 1,
+  "application": "inventory-console",
+  "goal": "Look up the requested item and read available units and warehouse.",
+  "entry_path": "/",
+  "inputs": {
+    "item_code": {
+      "type": "string",
+      "min_length": 6,
+      "max_length": 6,
+      "sensitivity": "public"
+    }
+  },
+  "elements": {
+    "record_identity": {
+      "candidates": [
+        {
+          "by": "row_value",
+          "value": "Item code"
+        }
+      ]
+    },
+    "units": {
+      "candidates": [
+        {
+          "by": "row_value",
+          "value": "Available units"
+        }
+      ]
+    },
+    "warehouse": {
+      "candidates": [
+        {
+          "by": "row_value",
+          "value": "Warehouse"
+        }
+      ]
+    },
+    "not_found": {
+      "candidates": [
+        {
+          "by": "css",
+          "value": "[role=\"status\"]"
+        }
+      ]
+    },
+    "observed_control_0": {
+      "candidates": [
+        {
+          "by": "role",
+          "value": "Stock lookup",
+          "role": "link"
+        }
+      ]
+    },
+    "observed_control_1": {
+      "candidates": [
+        {
+          "by": "near_text",
+          "value": "Item code"
+        }
+      ]
+    },
+    "observed_control_2": {
+      "candidates": [
+        {
+          "by": "role",
+          "value": "Find stock",
+          "role": "button"
+        }
+      ]
+    }
+  },
+  "outputs": {
+    "units": {
+      "field": {
+        "type": "digits",
+        "min_length": 1,
+        "max_length": 128,
+        "sensitivity": "public"
+      },
+      "element": "units"
+    },
+    "warehouse": {
+      "field": {
+        "type": "string",
+        "min_length": 1,
+        "max_length": 128,
+        "sensitivity": "public"
+      },
+      "element": "warehouse"
+    }
+  },
+  "invariants": [
+    {
+      "when": [
+        {
+          "kind": "path",
+          "value": "/record"
+        }
+      ],
+      "require": [
+        {
+          "kind": "query_equals",
+          "key": "sku",
+          "value": {
+            "input": "item_code"
+          }
+        }
+      ],
+      "code": "IDENTITY_MISMATCH"
+    },
+    {
+      "when": [
+        {
+          "kind": "path",
+          "value": "/record"
+        },
+        {
+          "kind": "count",
+          "element": "record_identity",
+          "equals": 1
+        }
+      ],
+      "require": [
+        {
+          "kind": "text_equals",
+          "element": "record_identity",
+          "value": {
+            "input": "item_code"
+          }
+        }
+      ],
+      "code": "IDENTITY_MISMATCH"
+    }
+  ],
+  "outcomes": [
+    {
+      "when": [
+        {
+          "kind": "path",
+          "value": "/record"
+        },
+        {
+          "kind": "text_equals",
+          "element": "not_found",
+          "value": {
+            "literal": "Item not found"
+          }
+        }
+      ],
+      "code": "ITEM_NOT_FOUND"
+    }
+  ],
+  "completion": [
+    {
+      "kind": "path",
+      "value": "/record"
+    },
+    {
+      "kind": "text_equals",
+      "element": "record_identity",
+      "value": {
+        "input": "item_code"
+      }
+    }
+  ],
+  "steps": [
+    {
+      "action": "click",
+      "element": "observed_control_0",
+      "postcondition": {
+        "kind": "path",
+        "value": "/lookup"
+      }
+    },
+    {
+      "action": "fill",
+      "element": "observed_control_1",
+      "input": "item_code",
+      "postcondition": {
+        "kind": "field_equals",
+        "element": "observed_control_1",
+        "value": {
+          "input": "item_code"
+        }
+      }
+    },
+    {
+      "action": "click",
+      "element": "observed_control_2",
+      "postcondition": {
+        "kind": "path",
+        "value": "/record"
+      }
+    }
+  ],
+  "provenance": {
+    "kind": "development-fixture",
+    "run_id": "260f9f21-32ed-434e-978f-0ba3c82546ae",
+    "task_digest": "a97646469d11f46702421ab5d3bdc27890d4aef3efec122bacb787210e20f897"
+  }
+}

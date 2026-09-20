@@ -1,0 +1,108 @@
+{
+  "capabilities": [
+    {
+      "name": "get_savings_balance",
+      "version": 1,
+      "description": "Find the requested member and read their savings balance and currency.",
+      "artifact_digest": "c36a6db9189e54b5b550849cf254343c13bce053323d0e1a04e65e4e4368dbc7",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "member_id": {
+            "type": "string",
+            "minLength": 5,
+            "maxLength": 5,
+            "pattern": "^[0-9]+$",
+            "x-sensitivity": "sensitive"
+          }
+        },
+        "required": [
+          "member_id"
+        ],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "balance": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^-?[0-9]+\\.[0-9]{2}$",
+            "x-sensitivity": "sensitive"
+          },
+          "currency": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "enum": [
+              "USD"
+            ],
+            "pattern": "^[A-Z]{3}$",
+            "x-sensitivity": "public"
+          }
+        },
+        "required": [
+          "balance",
+          "currency"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "get_member_contact",
+      "version": 1,
+      "description": "Find the requested member and read their contact email, phone, and membership status.",
+      "artifact_digest": "716ebf1ab8d560c24f0ed4c70910dfbe53b5b0458fc3285d86d53d037c8b7e5b",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "customer_ref": {
+            "type": "string",
+            "minLength": 5,
+            "maxLength": 5,
+            "pattern": "^[0-9]+$",
+            "x-sensitivity": "sensitive"
+          }
+        },
+        "required": [
+          "customer_ref"
+        ],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100,
+            "x-sensitivity": "sensitive"
+          },
+          "phone": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100,
+            "x-sensitivity": "sensitive"
+          },
+          "membership_status": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100,
+            "enum": [
+              "active",
+              "restricted"
+            ],
+            "x-sensitivity": "sensitive"
+          }
+        },
+        "required": [
+          "email",
+          "phone",
+          "membership_status"
+        ],
+        "additionalProperties": false
+      }
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "scenario": "harbor-missing",
+  "run_id": "b9cb88f8-2054-491a-b59c-e990e692e145",
+  "artifact_sha256": "ea51140580c3638dca2bbc35cafa1c3e6ca76f2ec3b7fef474042e8c305f620d",
+  "profile_digest": "bd830cb5ec409773b971f361ae36a12ab07810a1d68d54595d99c319bcb13c26",
+  "status": "business_outcome",
+  "code": "MEMBER_NOT_FOUND",
+  "model_calls": 0,
+  "output_checked": false,
+  "operator": "none"
+}

@@ -1,0 +1,11 @@
+{
+  "scenario": "summit-missing",
+  "run_id": "fe3fb546-57d3-4ee5-bf71-c1bc5f85d177",
+  "artifact_sha256": "ea51140580c3638dca2bbc35cafa1c3e6ca76f2ec3b7fef474042e8c305f620d",
+  "profile_digest": "fb1ffaa2a2ba45557070617ec51f4a07ed73757f65f37122734ee67930587250",
+  "status": "business_outcome",
+  "code": "MEMBER_NOT_FOUND",
+  "model_calls": 0,
+  "output_checked": false,
+  "operator": "none"
+}

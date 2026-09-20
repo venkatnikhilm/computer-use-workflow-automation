@@ -5,8 +5,9 @@ import { Events } from "./events.js";
 export class Session {
   operatorURL = "";
   stepLabels: string[] = [];
+  capabilityId = "workflow";
   guidance: () => Promise<string> = async () =>
-    "Resolve the blocker in the banking window, then click Resume here.";
+    "Resolve the blocker in the application window, then click Resume here.";
   owner: "automation" | "human" | "validating" | "terminal" = "automation";
   step = 0;
   assisted = false;
@@ -52,7 +53,7 @@ export class Session {
           res.setHeader("Cache-Control", "no-store");
           res.setHeader("Referrer-Policy", "no-referrer");
           res.end(
-            `<h1>Browser intervention</h1><p>Capability: get_savings_balance</p><p>Run: ${this.events.id} · Step: ${this.step}</p><p>${code}</p><p>Operate the existing banking browser, then resume.</p><form method="POST"><button name="action" value="resume">Resume</button><button name="action" value="cancel">Cancel</button></form>`,
+            `<h1>Browser intervention</h1><p>Capability: ${this.capabilityId.replace(/[^a-z0-9_]/g, "")}</p><p>Run: ${this.events.id} · Step: ${this.step}</p><p>${code}</p><p>Operate the existing application browser, then resume.</p><form method="POST"><button name="action" value="resume">Resume</button><button name="action" value="cancel">Cancel</button></form>`,
           );
           return;
         }
@@ -99,7 +100,7 @@ export class Session {
             res.setHeader("Cache-Control", "no-store");
             res.writeHead(409);
             res.end(
-              `<!doctype html><h1>Still waiting for the banking screen</h1><p>Complete sign-in and verification in the banking window. Leave it on the screen you returned to, then try Resume again here.</p><form method="POST"><button name="action" value="resume">Resume</button><button name="action" value="cancel">Cancel</button></form>`,
+              `<!doctype html><h1>Still waiting for the application screen</h1><p>Complete sign-in and verification in the application window. Leave it on the screen you returned to, then try Resume again here.</p><form method="POST"><button name="action" value="resume">Resume</button><button name="action" value="cancel">Cancel</button></form>`,
             );
             return;
           }

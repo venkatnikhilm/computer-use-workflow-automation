@@ -3,11 +3,15 @@ const targetValue = z.string().trim().min(1).max(160);
 export const Target = z.discriminatedUnion("by", [
   z.object({ by: z.literal("label"), value: targetValue }).strict(),
   z.object({ by: z.literal("css"), value: targetValue }).strict(),
+  z.object({ by: z.literal("placeholder"), value: targetValue }).strict(),
+  z.object({ by: z.literal("title"), value: targetValue }).strict(),
+  z.object({ by: z.literal("near_text"), value: targetValue }).strict(),
+  z.object({ by: z.literal("row_value"), value: targetValue }).strict(),
   z
     .object({
       by: z.literal("role"),
       value: targetValue,
-      role: z.enum(["button", "link", "heading", "textbox"]),
+      role: z.enum(["button", "link", "heading", "textbox", "searchbox"]),
     })
     .strict(),
 ]);

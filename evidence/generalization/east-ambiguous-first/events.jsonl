@@ -1,0 +1,6 @@
+{"run_id":"39d0e629-daa9-42fc-93e6-55ebb86bfa89","time":"2026-09-20T23:45:34.592Z","type":"profile_verified","profile_digest":"d1bfcf0ee1498a2aabec3d11fdc6aa3828152abde9100e2040b23678590758d3","tenant_id":"warehouse-east"}
+{"run_id":"39d0e629-daa9-42fc-93e6-55ebb86bfa89","time":"2026-09-20T23:45:34.593Z","type":"replay_started","model_calls":0,"artifact_digest":"c5429291a9efd1dff6ee2769bd1fc0e6751d58cf13ccf8e7fb0ea93ff7c465c7"}
+{"run_id":"39d0e629-daa9-42fc-93e6-55ebb86bfa89","time":"2026-09-20T23:45:34.598Z","type":"target_resolved","candidate_index":0,"match_count":1}
+{"run_id":"39d0e629-daa9-42fc-93e6-55ebb86bfa89","time":"2026-09-20T23:45:34.653Z","type":"action_verified","step":0,"action":"click","code":"POSTCONDITION_VERIFIED","match_count":1}
+{"run_id":"39d0e629-daa9-42fc-93e6-55ebb86bfa89","time":"2026-09-20T23:45:34.655Z","type":"step_completed","step":0,"action":"click"}
+{"run_id":"39d0e629-daa9-42fc-93e6-55ebb86bfa89","time":"2026-09-20T23:45:34.658Z","type":"failure","code":"AMBIGUOUS_TARGET","step":1,"model_calls":0}

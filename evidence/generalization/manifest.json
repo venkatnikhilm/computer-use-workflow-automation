@@ -1,0 +1,56 @@
+{
+  "discovery": "development-fixture; injected provider, no live LLM",
+  "description": "One artifact, two inventory variants, changing input IDs, inferred action controls",
+  "runs": [
+    {
+      "evidence": "evidence/generalization/east-normal-first",
+      "variant": "east",
+      "scenario": "normal",
+      "status": "success",
+      "artifact_digest": "c5429291a9efd1dff6ee2769bd1fc0e6751d58cf13ccf8e7fb0ea93ff7c465c7",
+      "model_calls": 0
+    },
+    {
+      "evidence": "evidence/generalization/east-normal-second",
+      "variant": "east",
+      "scenario": "normal",
+      "status": "success",
+      "artifact_digest": "c5429291a9efd1dff6ee2769bd1fc0e6751d58cf13ccf8e7fb0ea93ff7c465c7",
+      "model_calls": 0
+    },
+    {
+      "evidence": "evidence/generalization/west-normal-first",
+      "variant": "west",
+      "scenario": "normal",
+      "status": "success",
+      "artifact_digest": "c5429291a9efd1dff6ee2769bd1fc0e6751d58cf13ccf8e7fb0ea93ff7c465c7",
+      "model_calls": 0
+    },
+    {
+      "evidence": "evidence/generalization/west-normal-second",
+      "variant": "west",
+      "scenario": "normal",
+      "status": "success",
+      "artifact_digest": "c5429291a9efd1dff6ee2769bd1fc0e6751d58cf13ccf8e7fb0ea93ff7c465c7",
+      "model_calls": 0
+    },
+    {
+      "evidence": "evidence/generalization/east-normal-missing",
+      "variant": "east",
+      "scenario": "normal",
+      "status": "business_outcome",
+      "code": "ITEM_NOT_FOUND",
+      "artifact_digest": "c5429291a9efd1dff6ee2769bd1fc0e6751d58cf13ccf8e7fb0ea93ff7c465c7",
+      "model_calls": 0
+    },
+    {
+      "evidence": "evidence/generalization/east-ambiguous-first",
+      "variant": "east",
+      "scenario": "ambiguous",
+      "status": "failure",
+      "code": "AMBIGUOUS_TARGET",
+      "artifact_digest": "c5429291a9efd1dff6ee2769bd1fc0e6751d58cf13ccf8e7fb0ea93ff7c465c7",
+      "model_calls": 0
+    }
+  ]
+}

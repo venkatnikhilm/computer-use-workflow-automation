@@ -1,0 +1,297 @@
+{
+  "schema_version": 2,
+  "id": "get_savings_balance",
+  "version": 1,
+  "application": "bank-demo-v1",
+  "goal": "Find the requested member and read their savings balance and currency.",
+  "entry_path": "/",
+  "inputs": {
+    "member_id": {
+      "type": "digits",
+      "min_length": 5,
+      "max_length": 5,
+      "sensitivity": "sensitive"
+    }
+  },
+  "elements": {
+    "directory": {
+      "candidates": [
+        {
+          "by": "role",
+          "value": "Members",
+          "role": "link"
+        }
+      ]
+    },
+    "lookup_field": {
+      "candidates": [
+        {
+          "by": "label",
+          "value": "Member ID"
+        }
+      ]
+    },
+    "search": {
+      "candidates": [
+        {
+          "by": "role",
+          "value": "Search",
+          "role": "button"
+        }
+      ]
+    },
+    "open_record": {
+      "candidates": [
+        {
+          "by": "role",
+          "value": "Open member",
+          "role": "link"
+        }
+      ]
+    },
+    "record_identity": {
+      "candidates": [
+        {
+          "by": "css",
+          "value": "#member-id"
+        }
+      ]
+    },
+    "not_found": {
+      "candidates": [
+        {
+          "by": "css",
+          "value": "[role=\"status\"]"
+        }
+      ]
+    },
+    "savings_link": {
+      "candidates": [
+        {
+          "by": "role",
+          "value": "Savings",
+          "role": "link"
+        }
+      ]
+    },
+    "account_kind": {
+      "candidates": [
+        {
+          "by": "css",
+          "value": "#account-kind"
+        }
+      ]
+    },
+    "balance": {
+      "candidates": [
+        {
+          "by": "css",
+          "value": "#balance"
+        }
+      ]
+    },
+    "currency": {
+      "candidates": [
+        {
+          "by": "css",
+          "value": "#currency"
+        }
+      ]
+    }
+  },
+  "outputs": {
+    "balance": {
+      "field": {
+        "type": "decimal",
+        "sensitivity": "sensitive"
+      },
+      "element": "balance"
+    },
+    "currency": {
+      "field": {
+        "type": "currency",
+        "values": ["USD"],
+        "sensitivity": "public"
+      },
+      "element": "currency"
+    }
+  },
+  "invariants": [
+    {
+      "when": [
+        {
+          "kind": "path",
+          "value": "/results"
+        }
+      ],
+      "require": [
+        {
+          "kind": "query_equals",
+          "key": "member",
+          "value": {
+            "input": "member_id"
+          }
+        }
+      ],
+      "code": "IDENTITY_MISMATCH"
+    },
+    {
+      "when": [
+        {
+          "kind": "path",
+          "value": "/member"
+        }
+      ],
+      "require": [
+        {
+          "kind": "query_equals",
+          "key": "member",
+          "value": {
+            "input": "member_id"
+          }
+        }
+      ],
+      "code": "IDENTITY_MISMATCH"
+    },
+    {
+      "when": [
+        {
+          "kind": "path",
+          "value": "/account"
+        }
+      ],
+      "require": [
+        {
+          "kind": "query_equals",
+          "key": "member",
+          "value": {
+            "input": "member_id"
+          }
+        }
+      ],
+      "code": "IDENTITY_MISMATCH"
+    },
+    {
+      "when": [
+        {
+          "kind": "path",
+          "value": "/member"
+        }
+      ],
+      "require": [
+        {
+          "kind": "text_equals",
+          "element": "record_identity",
+          "value": {
+            "input": "member_id"
+          }
+        }
+      ],
+      "code": "IDENTITY_MISMATCH"
+    },
+    {
+      "when": [
+        {
+          "kind": "path",
+          "value": "/account"
+        }
+      ],
+      "require": [
+        {
+          "kind": "text_equals",
+          "element": "record_identity",
+          "value": {
+            "input": "member_id"
+          }
+        }
+      ],
+      "code": "IDENTITY_MISMATCH"
+    },
+    {
+      "when": [
+        {
+          "kind": "path",
+          "value": "/account"
+        }
+      ],
+      "require": [
+        {
+          "kind": "text_equals",
+          "element": "account_kind",
+          "value": {
+            "literal": "savings"
+          }
+        }
+      ],
+      "code": "IDENTITY_MISMATCH"
+    }
+  ],
+  "outcomes": [
+    {
+      "when": [
+        {
+          "kind": "path",
+          "value": "/results"
+        },
+        {
+          "kind": "text_equals",
+          "element": "not_found",
+          "value": {
+            "literal": "Member not found"
+          }
+        }
+      ],
+      "code": "MEMBER_NOT_FOUND"
+    },
+    {
+      "when": [
+        {
+          "kind": "path",
+          "value": "/member"
+        },
+        {
+          "kind": "text_equals",
+          "element": "not_found",
+          "value": {
+            "literal": "No savings account"
+          }
+        }
+      ],
+      "code": "NO_SAVINGS_ACCOUNT"
+    },
+    {
+      "when": [
+        {
+          "kind": "path",
+          "value": "/member"
+        },
+        {
+          "kind": "count",
+          "element": "savings_link",
+          "equals": 2
+        }
+      ],
+      "code": "AMBIGUOUS_ACCOUNT"
+    }
+  ],
+  "completion": [
+    {
+      "kind": "path",
+      "value": "/account"
+    },
+    {
+      "kind": "text_equals",
+      "element": "record_identity",
+      "value": {
+        "input": "member_id"
+      }
+    },
+    {
+      "kind": "text_equals",
+      "element": "account_kind",
+      "value": {
+        "literal": "savings"
+      }
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "scenario": "summit-1",
+  "run_id": "b8e7d099-6063-4335-8713-f3eb05557be3",
+  "artifact_sha256": "ea51140580c3638dca2bbc35cafa1c3e6ca76f2ec3b7fef474042e8c305f620d",
+  "profile_digest": "fb1ffaa2a2ba45557070617ec51f4a07ed73757f65f37122734ee67930587250",
+  "status": "success",
+  "model_calls": 0,
+  "output_checked": true,
+  "operator": "none"
+}

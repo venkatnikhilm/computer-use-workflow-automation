@@ -1,0 +1,10 @@
+{
+  "scenario": "harbor-2",
+  "run_id": "dc53d6ba-2b6c-4e12-be84-7cd80bdfa2a1",
+  "artifact_sha256": "ea51140580c3638dca2bbc35cafa1c3e6ca76f2ec3b7fef474042e8c305f620d",
+  "profile_digest": "bd830cb5ec409773b971f361ae36a12ab07810a1d68d54595d99c319bcb13c26",
+  "status": "success",
+  "model_calls": 0,
+  "output_checked": true,
+  "operator": "none"
+}

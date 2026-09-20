@@ -1,0 +1,11 @@
+{
+  "run_id": "1975fbc6-4552-4181-9e97-7d4060e8be56",
+  "artifact_sha256": "ea51140580c3638dca2bbc35cafa1c3e6ca76f2ec3b7fef474042e8c305f620d",
+  "events_sha256": "a6d0174134794ae71779d740abacdc8f42dcca44cf947587a991c84552af2cfb",
+  "model_calls": 4,
+  "status": "discovery_completed",
+  "operator": "none",
+  "kind": "live-model",
+  "model": "gemini-3.5-flash-lite",
+  "steps_recorded": 4
+}

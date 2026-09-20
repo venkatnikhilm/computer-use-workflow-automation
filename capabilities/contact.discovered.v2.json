@@ -1,0 +1,258 @@
+{
+  "schema_version": 2,
+  "id": "get_member_contact",
+  "version": 1,
+  "application": "bank-demo-v1",
+  "goal": "Find the requested member and read their contact email, phone, and membership status.",
+  "entry_path": "/",
+  "inputs": {
+    "customer_ref": {
+      "type": "digits",
+      "min_length": 5,
+      "max_length": 5,
+      "sensitivity": "sensitive"
+    }
+  },
+  "elements": {
+    "directory": {
+      "candidates": [
+        {
+          "by": "role",
+          "value": "Members",
+          "role": "link"
+        }
+      ]
+    },
+    "lookup_field": {
+      "candidates": [
+        {
+          "by": "label",
+          "value": "Member ID"
+        }
+      ]
+    },
+    "search": {
+      "candidates": [
+        {
+          "by": "role",
+          "value": "Search",
+          "role": "button"
+        }
+      ]
+    },
+    "open_record": {
+      "candidates": [
+        {
+          "by": "role",
+          "value": "Open member",
+          "role": "link"
+        }
+      ]
+    },
+    "record_identity": {
+      "candidates": [
+        {
+          "by": "css",
+          "value": "#member-id"
+        }
+      ]
+    },
+    "not_found": {
+      "candidates": [
+        {
+          "by": "css",
+          "value": "[role=\"status\"]"
+        }
+      ]
+    },
+    "email": {
+      "candidates": [
+        {
+          "by": "css",
+          "value": "#contact-email"
+        }
+      ]
+    },
+    "phone": {
+      "candidates": [
+        {
+          "by": "css",
+          "value": "#contact-phone"
+        }
+      ]
+    },
+    "membership_status": {
+      "candidates": [
+        {
+          "by": "css",
+          "value": "#membership-status"
+        }
+      ]
+    }
+  },
+  "outputs": {
+    "email": {
+      "field": {
+        "type": "string",
+        "min_length": 1,
+        "max_length": 100,
+        "sensitivity": "sensitive"
+      },
+      "element": "email"
+    },
+    "phone": {
+      "field": {
+        "type": "string",
+        "min_length": 1,
+        "max_length": 100,
+        "sensitivity": "sensitive"
+      },
+      "element": "phone"
+    },
+    "membership_status": {
+      "field": {
+        "type": "string",
+        "min_length": 1,
+        "max_length": 100,
+        "values": [
+          "active",
+          "restricted"
+        ],
+        "sensitivity": "sensitive"
+      },
+      "element": "membership_status"
+    }
+  },
+  "invariants": [
+    {
+      "when": [
+        {
+          "kind": "path",
+          "value": "/results"
+        }
+      ],
+      "require": [
+        {
+          "kind": "query_equals",
+          "key": "member",
+          "value": {
+            "input": "customer_ref"
+          }
+        }
+      ],
+      "code": "IDENTITY_MISMATCH"
+    },
+    {
+      "when": [
+        {
+          "kind": "path",
+          "value": "/member"
+        }
+      ],
+      "require": [
+        {
+          "kind": "query_equals",
+          "key": "member",
+          "value": {
+            "input": "customer_ref"
+          }
+        }
+      ],
+      "code": "IDENTITY_MISMATCH"
+    },
+    {
+      "when": [
+        {
+          "kind": "path",
+          "value": "/member"
+        }
+      ],
+      "require": [
+        {
+          "kind": "text_equals",
+          "element": "record_identity",
+          "value": {
+            "input": "customer_ref"
+          }
+        }
+      ],
+      "code": "IDENTITY_MISMATCH"
+    }
+  ],
+  "outcomes": [
+    {
+      "when": [
+        {
+          "kind": "path",
+          "value": "/results"
+        },
+        {
+          "kind": "text_equals",
+          "element": "not_found",
+          "value": {
+            "literal": "Member not found"
+          }
+        }
+      ],
+      "code": "MEMBER_NOT_FOUND"
+    }
+  ],
+  "completion": [
+    {
+      "kind": "path",
+      "value": "/member"
+    },
+    {
+      "kind": "text_equals",
+      "element": "record_identity",
+      "value": {
+        "input": "customer_ref"
+      }
+    }
+  ],
+  "steps": [
+    {
+      "action": "click",
+      "element": "directory",
+      "postcondition": {
+        "kind": "path",
+        "value": "/members"
+      }
+    },
+    {
+      "action": "fill",
+      "element": "lookup_field",
+      "input": "customer_ref",
+      "postcondition": {
+        "kind": "field_equals",
+        "element": "lookup_field",
+        "value": {
+          "input": "customer_ref"
+        }
+      }
+    },
+    {
+      "action": "click",
+      "element": "search",
+      "postcondition": {
+        "kind": "path",
+        "value": "/results"
+      }
+    },
+    {
+      "action": "click",
+      "element": "open_record",
+      "postcondition": {
+        "kind": "path",
+        "value": "/member"
+      }
+    }
+  ],
+  "provenance": {
+    "kind": "llm-discovery",
+    "run_id": "1975fbc6-4552-4181-9e97-7d4060e8be56",
+    "task_digest": "a2485effd1b3b4f1c08f93dbfa3d53c4392e07029d44d6968d7c5e38316043ac",
+    "model": "gemini-3.5-flash-lite",
+    "api_attempts": 4
+  }
+}

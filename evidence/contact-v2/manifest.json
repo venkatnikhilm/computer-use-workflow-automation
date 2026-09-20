@@ -1,0 +1,73 @@
+{
+  "artifact": "capabilities/contact.discovered.v2.json",
+  "artifact_sha256": "ea51140580c3638dca2bbc35cafa1c3e6ca76f2ec3b7fef474042e8c305f620d",
+  "discovery": {
+    "kind": "live-model",
+    "run_id": "1975fbc6-4552-4181-9e97-7d4060e8be56",
+    "api_attempts": 4
+  },
+  "replays": [
+    {
+      "scenario": "harbor-1",
+      "run_id": "98027300-2369-43e3-802c-a4efa3916114",
+      "artifact_sha256": "ea51140580c3638dca2bbc35cafa1c3e6ca76f2ec3b7fef474042e8c305f620d",
+      "profile_digest": "bd830cb5ec409773b971f361ae36a12ab07810a1d68d54595d99c319bcb13c26",
+      "status": "success",
+      "model_calls": 0,
+      "output_checked": true,
+      "operator": "none"
+    },
+    {
+      "scenario": "harbor-2",
+      "run_id": "dc53d6ba-2b6c-4e12-be84-7cd80bdfa2a1",
+      "artifact_sha256": "ea51140580c3638dca2bbc35cafa1c3e6ca76f2ec3b7fef474042e8c305f620d",
+      "profile_digest": "bd830cb5ec409773b971f361ae36a12ab07810a1d68d54595d99c319bcb13c26",
+      "status": "success",
+      "model_calls": 0,
+      "output_checked": true,
+      "operator": "none"
+    },
+    {
+      "scenario": "harbor-missing",
+      "run_id": "b9cb88f8-2054-491a-b59c-e990e692e145",
+      "artifact_sha256": "ea51140580c3638dca2bbc35cafa1c3e6ca76f2ec3b7fef474042e8c305f620d",
+      "profile_digest": "bd830cb5ec409773b971f361ae36a12ab07810a1d68d54595d99c319bcb13c26",
+      "status": "business_outcome",
+      "code": "MEMBER_NOT_FOUND",
+      "model_calls": 0,
+      "output_checked": false,
+      "operator": "none"
+    },
+    {
+      "scenario": "summit-1",
+      "run_id": "b8e7d099-6063-4335-8713-f3eb05557be3",
+      "artifact_sha256": "ea51140580c3638dca2bbc35cafa1c3e6ca76f2ec3b7fef474042e8c305f620d",
+      "profile_digest": "fb1ffaa2a2ba45557070617ec51f4a07ed73757f65f37122734ee67930587250",
+      "status": "success",
+      "model_calls": 0,
+      "output_checked": true,
+      "operator": "none"
+    },
+    {
+      "scenario": "summit-2",
+      "run_id": "9eac1151-247a-4d3c-a58f-f95c8e1bf98b",
+      "artifact_sha256": "ea51140580c3638dca2bbc35cafa1c3e6ca76f2ec3b7fef474042e8c305f620d",
+      "profile_digest": "fb1ffaa2a2ba45557070617ec51f4a07ed73757f65f37122734ee67930587250",
+      "status": "success",
+      "model_calls": 0,
+      "output_checked": true,
+      "operator": "none"
+    },
+    {
+      "scenario": "summit-missing",
+      "run_id": "fe3fb546-57d3-4ee5-bf71-c1bc5f85d177",
+      "artifact_sha256": "ea51140580c3638dca2bbc35cafa1c3e6ca76f2ec3b7fef474042e8c305f620d",
+      "profile_digest": "fb1ffaa2a2ba45557070617ec51f4a07ed73757f65f37122734ee67930587250",
+      "status": "business_outcome",
+      "code": "MEMBER_NOT_FOUND",
+      "model_calls": 0,
+      "output_checked": false,
+      "operator": "none"
+    }
+  ]
+}

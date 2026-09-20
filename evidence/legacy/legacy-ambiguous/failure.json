@@ -6,9 +6,14 @@
   "ownership": "automation",
   "framed": true,
   "diagnostics": {
-    "action": "fill",
+    "action": "click",
     "phase": "resolve_target",
-    "matches": 2
+    "matches": 2,
+    "candidate_index": 0,
+    "visible": true,
+    "enabled": true,
+    "expected_path": "/members",
+    "checkpoint_passed": true
   },
   "structure": {
     "tags": [

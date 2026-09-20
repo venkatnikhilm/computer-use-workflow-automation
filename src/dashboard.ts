@@ -26,11 +26,8 @@ export class Dashboard {
       .find((e) => e.type === "intervention");
     return {
       run_id: this.events.id,
-      tenant:
-        this.tenant === "summit"
-          ? "Summit Community Bank"
-          : "Harbor Credit Union",
-      capability: "Get savings balance",
+      tenant: this.tenant,
+      capability: this.session.capabilityId.replaceAll("_", " "),
       owner: this.ended ? "terminal" : this.session.owner,
       steps: this.session.stepLabels.map((label, i) => ({
         label,
@@ -66,7 +63,7 @@ export class Dashboard {
       }
       if (req.method === "GET" && req.url.endsWith("/status")) {
         res.setHeader("Content-Type", "application/json");
-        let guidance = "Automation is operating the banking window.";
+        let guidance = "Automation is operating the application window.";
         if (this.ended)
           guidance =
             "Run ended. Validated outputs, if any, are in your terminal. You can close this dashboard.";
@@ -74,7 +71,8 @@ export class Dashboard {
           try {
             guidance = await this.session.guidance();
           } catch {
-            guidance = "The banking window is unavailable. Cancel this run.";
+            guidance =
+              "The application window is unavailable. Cancel this run.";
           }
         }
         const state = this.state();

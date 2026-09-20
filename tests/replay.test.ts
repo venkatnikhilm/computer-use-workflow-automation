@@ -1,3 +1,4 @@
+import { testAction, testRun } from "./browser-helpers.js";
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
@@ -112,14 +113,16 @@ test("policy and ownership stop browser actions", async () => {
     assert(!surface.allowed("https://example.com"));
     session.owner = "human";
     await assert.rejects(
-      () => surface.act(fixture.steps[0] as never, { member_id: "12345" }),
+      () =>
+        testAction(surface, fixture.steps[0] as never, { member_id: "12345" }),
       /CONTROL_NOT_OWNED/,
     );
     session.owner = "automation";
     await replay(fixture, { member_id: "12345" }, surface);
     await assert.rejects(
       () =>
-        surface.act(
+        testAction(
+          surface,
           {
             action: "click",
             target: { by: "role", role: "button", value: "Transfer funds" },
@@ -162,7 +165,8 @@ test("same-session handoff validates resume and captures operator actions (simul
     assert.equal(premature.status, 409);
     await assert.rejects(
       () =>
-        surface.act(
+        testAction(
+          surface,
           {
             action: "click",
             target: {
@@ -228,8 +232,21 @@ test("discovery wiring with mocked provider generates a parameterized artifact (
                 {
                   text: JSON.stringify(
                     calls < fixture.steps.length
-                      ? { action: fixture.steps[calls++], finish: false }
-                      : { action: null, finish: true },
+                      ? {
+                          action: fixture.steps[calls].action,
+                          element: [
+                            "directory",
+                            "lookup_field",
+                            "search",
+                            "open_record",
+                            "savings_link",
+                          ][calls],
+                          input:
+                            fixture.steps[calls++].action === "fill"
+                              ? "member_id"
+                              : null,
+                        }
+                      : { action: "finish" },
                   ),
                 },
               ],
@@ -310,7 +327,7 @@ test("policy preflight rejects a later forbidden step before performing any acti
     },
   );
   let actions = 0;
-  surface.act = async () => {
+  surface.performAction = async () => {
     actions++;
     throw Error("Must not dispatch");
   };
@@ -344,14 +361,14 @@ test("business outcomes are scoped to the requested member and correct screen", 
       p.textContent = "Member not found";
       document.body.append(p);
     });
-    await surface.conditions({ member_id: "12345" }); // Unrelated homepage status is not a search outcome.
+    await testRun(surface, { member_id: "12345" }).guard(); // Unrelated homepage status is not a search outcome.
     await surface.page.goto(surface.base + "/member?member=11111");
     await assert.rejects(
-      () => surface.conditions({ member_id: "12345" }),
+      () => testRun(surface, { member_id: "12345" }).guard(),
       /IDENTITY_MISMATCH/,
     );
     await assert.rejects(
-      () => surface.conditions({ member_id: "11111" }),
+      () => testRun(surface, { member_id: "11111" }).guard(),
       /NO_SAVINGS_ACCOUNT/,
     );
     await surface.page.goto(surface.base + "/member?member=12345");
@@ -359,7 +376,7 @@ test("business outcomes are scoped to the requested member and correct screen", 
       .locator("#member-id")
       .evaluate((el) => (el.textContent = "67890"));
     await assert.rejects(
-      () => surface.conditions({ member_id: "12345" }),
+      () => testRun(surface, { member_id: "12345" }).guard(),
       /IDENTITY_MISMATCH/,
     );
   } finally {
@@ -389,15 +406,15 @@ test("output extraction follows artifact descriptors and refuses ambiguous outpu
       balance: { by: "css" as const, value: "#available-savings-balance" },
     };
     assert.deepEqual(
-      await surface.complete({ member_id: "12345" }, extraction),
+      await testRun(surface, { member_id: "12345" }, extraction).outputs(),
       { balance: "100.00", currency: "USD" },
     );
     await surface.page
       .locator("#member-id")
       .evaluate((el) => el.after(el.cloneNode(true)));
     await assert.rejects(
-      () => surface.complete({ member_id: "12345" }, extraction),
-      /OUTPUT_TARGET_INVALID/,
+      () => testRun(surface, { member_id: "12345" }, extraction).outputs(),
+      /AMBIGUOUS_TARGET/,
     );
     await surface.page
       .locator("#member-id")
@@ -407,8 +424,8 @@ test("output extraction follows artifact descriptors and refuses ambiguous outpu
       .locator("#available-savings-balance")
       .evaluate((el) => el.after(el.cloneNode(true)));
     await assert.rejects(
-      () => surface.complete({ member_id: "12345" }, extraction),
-      /OUTPUT_TARGET_INVALID/,
+      () => testRun(surface, { member_id: "12345" }, extraction).outputs(),
+      /AMBIGUOUS_TARGET/,
     );
   } finally {
     await surface.close();

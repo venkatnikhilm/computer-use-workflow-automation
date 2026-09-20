@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "step": 2,
+  "code": "ITEM_NOT_FOUND",
+  "route": "/record",
+  "ownership": "automation",
+  "framed": false,
+  "diagnostics": {
+    "action": "click",
+    "phase": "checkpoint",
+    "matches": 1,
+    "candidate_index": 0,
+    "visible": true,
+    "enabled": true,
+    "expected_path": "/record",
+    "checkpoint_passed": true
+  },
+  "structure": {
+    "tags": [
+      {
+        "tag": "MAIN",
+        "role": null
+      },
+      {
+        "tag": "H1",
+        "role": null
+      },
+      {
+        "tag": "P",
+        "role": "status"
+      }
+    ]
+  }
+}

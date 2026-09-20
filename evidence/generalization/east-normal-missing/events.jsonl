@@ -1,0 +1,11 @@
+{"run_id":"2b75e2ff-bb16-4e29-a063-be29b67f0e8c","time":"2026-09-20T23:45:34.320Z","type":"profile_verified","profile_digest":"d1bfcf0ee1498a2aabec3d11fdc6aa3828152abde9100e2040b23678590758d3","tenant_id":"warehouse-east"}
+{"run_id":"2b75e2ff-bb16-4e29-a063-be29b67f0e8c","time":"2026-09-20T23:45:34.321Z","type":"replay_started","model_calls":0,"artifact_digest":"c5429291a9efd1dff6ee2769bd1fc0e6751d58cf13ccf8e7fb0ea93ff7c465c7"}
+{"run_id":"2b75e2ff-bb16-4e29-a063-be29b67f0e8c","time":"2026-09-20T23:45:34.326Z","type":"target_resolved","candidate_index":0,"match_count":1}
+{"run_id":"2b75e2ff-bb16-4e29-a063-be29b67f0e8c","time":"2026-09-20T23:45:34.381Z","type":"action_verified","step":0,"action":"click","code":"POSTCONDITION_VERIFIED","match_count":1}
+{"run_id":"2b75e2ff-bb16-4e29-a063-be29b67f0e8c","time":"2026-09-20T23:45:34.383Z","type":"step_completed","step":0,"action":"click"}
+{"run_id":"2b75e2ff-bb16-4e29-a063-be29b67f0e8c","time":"2026-09-20T23:45:34.386Z","type":"target_resolved","candidate_index":0,"match_count":1}
+{"run_id":"2b75e2ff-bb16-4e29-a063-be29b67f0e8c","time":"2026-09-20T23:45:34.402Z","type":"action_verified","step":1,"action":"fill","code":"POSTCONDITION_VERIFIED","match_count":1}
+{"run_id":"2b75e2ff-bb16-4e29-a063-be29b67f0e8c","time":"2026-09-20T23:45:34.405Z","type":"step_completed","step":1,"action":"fill"}
+{"run_id":"2b75e2ff-bb16-4e29-a063-be29b67f0e8c","time":"2026-09-20T23:45:34.408Z","type":"target_resolved","candidate_index":0,"match_count":1}
+{"run_id":"2b75e2ff-bb16-4e29-a063-be29b67f0e8c","time":"2026-09-20T23:45:34.469Z","type":"action_verified","step":2,"action":"click","code":"POSTCONDITION_VERIFIED","match_count":1}
+{"run_id":"2b75e2ff-bb16-4e29-a063-be29b67f0e8c","time":"2026-09-20T23:45:34.473Z","type":"business_outcome","code":"ITEM_NOT_FOUND","step":2,"model_calls":0}

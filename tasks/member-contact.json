@@ -1,0 +1,207 @@
+{
+  "schema_version": 2,
+  "id": "get_member_contact",
+  "version": 1,
+  "application": "bank-demo-v1",
+  "goal": "Find the requested member and read their contact email, phone, and membership status.",
+  "entry_path": "/",
+  "inputs": {
+    "customer_ref": {
+      "type": "digits",
+      "min_length": 5,
+      "max_length": 5,
+      "sensitivity": "sensitive"
+    }
+  },
+  "elements": {
+    "directory": {
+      "candidates": [
+        {
+          "by": "role",
+          "value": "Members",
+          "role": "link"
+        }
+      ]
+    },
+    "lookup_field": {
+      "candidates": [
+        {
+          "by": "label",
+          "value": "Member ID"
+        }
+      ]
+    },
+    "search": {
+      "candidates": [
+        {
+          "by": "role",
+          "value": "Search",
+          "role": "button"
+        }
+      ]
+    },
+    "open_record": {
+      "candidates": [
+        {
+          "by": "role",
+          "value": "Open member",
+          "role": "link"
+        }
+      ]
+    },
+    "record_identity": {
+      "candidates": [
+        {
+          "by": "css",
+          "value": "#member-id"
+        }
+      ]
+    },
+    "not_found": {
+      "candidates": [
+        {
+          "by": "css",
+          "value": "[role=\"status\"]"
+        }
+      ]
+    },
+    "email": {
+      "candidates": [
+        {
+          "by": "css",
+          "value": "#contact-email"
+        }
+      ]
+    },
+    "phone": {
+      "candidates": [
+        {
+          "by": "css",
+          "value": "#contact-phone"
+        }
+      ]
+    },
+    "membership_status": {
+      "candidates": [
+        {
+          "by": "css",
+          "value": "#membership-status"
+        }
+      ]
+    }
+  },
+  "outputs": {
+    "email": {
+      "field": {
+        "type": "string",
+        "max_length": 100,
+        "sensitivity": "sensitive"
+      },
+      "element": "email"
+    },
+    "phone": {
+      "field": {
+        "type": "string",
+        "max_length": 100,
+        "sensitivity": "sensitive"
+      },
+      "element": "phone"
+    },
+    "membership_status": {
+      "field": {
+        "type": "string",
+        "max_length": 100,
+        "sensitivity": "sensitive",
+        "values": ["active", "restricted"]
+      },
+      "element": "membership_status"
+    }
+  },
+  "invariants": [
+    {
+      "when": [
+        {
+          "kind": "path",
+          "value": "/results"
+        }
+      ],
+      "require": [
+        {
+          "kind": "query_equals",
+          "key": "member",
+          "value": {
+            "input": "customer_ref"
+          }
+        }
+      ],
+      "code": "IDENTITY_MISMATCH"
+    },
+    {
+      "when": [
+        {
+          "kind": "path",
+          "value": "/member"
+        }
+      ],
+      "require": [
+        {
+          "kind": "query_equals",
+          "key": "member",
+          "value": {
+            "input": "customer_ref"
+          }
+        }
+      ],
+      "code": "IDENTITY_MISMATCH"
+    },
+    {
+      "when": [
+        {
+          "kind": "path",
+          "value": "/member"
+        }
+      ],
+      "require": [
+        {
+          "kind": "text_equals",
+          "element": "record_identity",
+          "value": {
+            "input": "customer_ref"
+          }
+        }
+      ],
+      "code": "IDENTITY_MISMATCH"
+    }
+  ],
+  "outcomes": [
+    {
+      "when": [
+        {
+          "kind": "path",
+          "value": "/results"
+        },
+        {
+          "kind": "text_equals",
+          "element": "not_found",
+          "value": {
+            "literal": "Member not found"
+          }
+        }
+      ],
+      "code": "MEMBER_NOT_FOUND"
+    }
+  ],
+  "completion": [
+    {
+      "kind": "path",
+      "value": "/member"
+    },
+    {
+      "kind": "text_equals",
+      "element": "record_identity",
+      "value": {
+        "input": "customer_ref"
+      }
+    }
+  ]
+}

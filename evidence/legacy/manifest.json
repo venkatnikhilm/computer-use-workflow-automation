@@ -3,7 +3,7 @@
   "runs": [
     {
       "scenario": "legacy",
-      "run_id": "8cb75964-3f32-4c0b-94e9-74fb6ed5b8c8",
+      "run_id": "ed43388a-4915-4bf4-9202-ec247bade025",
       "artifact_sha256": "9aa764a60409c0b50c947ebd4111f4f5e91d72d988bf900efc89a21e44e58e97",
       "profile_digest": "646094c5e422b27b16fbee9e172748216a8f04d424bcbe47557c16b8b53843ad",
       "status": "success",
@@ -12,7 +12,7 @@
     },
     {
       "scenario": "legacy-ambiguous",
-      "run_id": "b1986433-1a3b-4d78-9480-d64cbea41e88",
+      "run_id": "6b2f8427-df62-4456-a12f-21d90907957e",
       "artifact_sha256": "9aa764a60409c0b50c947ebd4111f4f5e91d72d988bf900efc89a21e44e58e97",
       "profile_digest": "646094c5e422b27b16fbee9e172748216a8f04d424bcbe47557c16b8b53843ad",
       "status": "failure",

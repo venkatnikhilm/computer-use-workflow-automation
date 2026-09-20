@@ -1,20 +1,86 @@
 {
-  "tags": [
-    {
-      "tag": "H1",
-      "role": null
-    },
-    {
-      "tag": "P",
-      "role": null
-    },
-    {
-      "tag": "SPAN",
-      "role": null
-    },
-    {
-      "tag": "P",
-      "role": "status"
-    }
-  ]
+  "schema_version": 1,
+  "step": 3,
+  "code": "NO_SAVINGS_ACCOUNT",
+  "route": "/member",
+  "ownership": "automation",
+  "framed": false,
+  "diagnostics": {
+    "action": "click",
+    "phase": "checkpoint",
+    "matches": 1,
+    "candidate_index": 0,
+    "visible": true,
+    "enabled": true,
+    "expected_path": "/member",
+    "checkpoint_passed": true
+  },
+  "structure": {
+    "tags": [
+      {
+        "tag": "HEADER",
+        "role": null
+      },
+      {
+        "tag": "STRONG",
+        "role": null
+      },
+      {
+        "tag": "SMALL",
+        "role": null
+      },
+      {
+        "tag": "MAIN",
+        "role": null
+      },
+      {
+        "tag": "H1",
+        "role": null
+      },
+      {
+        "tag": "P",
+        "role": null
+      },
+      {
+        "tag": "SPAN",
+        "role": null
+      },
+      {
+        "tag": "DL",
+        "role": null
+      },
+      {
+        "tag": "DT",
+        "role": null
+      },
+      {
+        "tag": "DD",
+        "role": null
+      },
+      {
+        "tag": "DT",
+        "role": null
+      },
+      {
+        "tag": "DD",
+        "role": null
+      },
+      {
+        "tag": "DT",
+        "role": null
+      },
+      {
+        "tag": "DD",
+        "role": null
+      },
+      {
+        "tag": "P",
+        "role": "status"
+      },
+      {
+        "tag": "FOOTER",
+        "role": null
+      }
+    ]
+  }
 }

@@ -1,0 +1,13 @@
+{
+  "run_id": "b7b17fde-ff21-4bd7-90aa-f74ffa9060ae",
+  "artifact_sha256": "ea51140580c3638dca2bbc35cafa1c3e6ca76f2ec3b7fef474042e8c305f620d",
+  "events_sha256": "34f056a08a1dd127ebf333c77ea722847047e13b6edbf48104cd95d2c637a72f",
+  "model_calls": 0,
+  "status": "success",
+  "operator": "none",
+  "kind": "user-invoked-replay",
+  "assisted": false,
+  "input_change_source": "User-provided terminal commands show a different input; persisted events intentionally exclude input values.",
+  "output_checked": false,
+  "output_confirmation": "User-provided terminal output reports success; automated value checks are in replays/."
+}

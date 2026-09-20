@@ -1,0 +1,10 @@
+{
+  "demonstration": "Programmatic caller lists capabilities and invokes a selected name over HTTP; no LLM caller is claimed.",
+  "capability": "get_member_contact",
+  "artifact_digest": "716ebf1ab8d560c24f0ed4c70910dfbe53b5b0458fc3285d86d53d037c8b7e5b",
+  "run_id": "b9591e74-99b3-4d46-877b-4ea409a95725",
+  "status": "success",
+  "output_checked": true,
+  "model_calls": 0,
+  "assisted": false
+}

@@ -9,9 +9,18 @@
     "demo": "tsx demo/server.ts",
     "discover": "tsx src/cli.ts discover",
     "replay": "tsx src/cli.ts replay",
+    "discover:workflow": "tsx src/cli.ts discover-workflow",
+    "replay:workflow": "tsx src/cli.ts replay-workflow",
+    "verify:workflows": "tsx scripts/verify-workflows.ts",
+    "verify:contact": "tsx scripts/verify-contact.ts",
     "verify:capability": "tsx scripts/verify-capability.ts",
     "verify:tenants": "tsx scripts/verify-tenants.ts",
-    "verify:legacy": "tsx scripts/verify-legacy.ts"
+    "verify:legacy": "tsx scripts/verify-legacy.ts",
+    "api": "tsx src/api-cli.ts",
+    "verify:api": "tsx scripts/verify-api.ts",
+    "demo:inventory": "tsx demo/inventory.ts",
+    "verify:generalization": "tsx scripts/verify-generalization.ts",
+    "verify:targeting": "tsx --test tests/targeting.test.ts"
   },
   "dependencies": {
     "playwright": "1.63.0",

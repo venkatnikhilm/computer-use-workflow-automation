@@ -1,5 +1,8 @@
-{"run_id":"a3f460f9-c11e-44eb-9e66-3e703ec39634","time":"2026-09-13T07:42:07.614Z","type":"replay_started","model_calls":0}
-{"run_id":"a3f460f9-c11e-44eb-9e66-3e703ec39634","time":"2026-09-13T07:42:07.676Z","type":"step_completed","step":0,"action":"click"}
-{"run_id":"a3f460f9-c11e-44eb-9e66-3e703ec39634","time":"2026-09-13T07:42:07.689Z","type":"step_completed","step":1,"action":"fill"}
-{"run_id":"a3f460f9-c11e-44eb-9e66-3e703ec39634","time":"2026-09-13T07:42:07.747Z","type":"step_completed","step":2,"action":"click"}
-{"run_id":"a3f460f9-c11e-44eb-9e66-3e703ec39634","time":"2026-09-13T07:42:07.758Z","type":"business_outcome","code":"MEMBER_NOT_FOUND","step":3,"model_calls":0}
+{"run_id":"35bde26b-cf74-4579-a5a1-128e0bc9e4fa","time":"2026-09-20T23:35:01.210Z","type":"profile_verified","profile_digest":"bd830cb5ec409773b971f361ae36a12ab07810a1d68d54595d99c319bcb13c26","tenant_id":"harbor"}
+{"run_id":"35bde26b-cf74-4579-a5a1-128e0bc9e4fa","time":"2026-09-20T23:35:01.211Z","type":"replay_started","model_calls":0,"artifact_digest":"c36a6db9189e54b5b550849cf254343c13bce053323d0e1a04e65e4e4368dbc7"}
+{"run_id":"35bde26b-cf74-4579-a5a1-128e0bc9e4fa","time":"2026-09-20T23:35:01.270Z","type":"action_verified","step":0,"action":"click","code":"POSTCONDITION_VERIFIED","match_count":1}
+{"run_id":"35bde26b-cf74-4579-a5a1-128e0bc9e4fa","time":"2026-09-20T23:35:01.276Z","type":"step_completed","step":0,"action":"click"}
+{"run_id":"35bde26b-cf74-4579-a5a1-128e0bc9e4fa","time":"2026-09-20T23:35:01.303Z","type":"action_verified","step":1,"action":"fill","code":"POSTCONDITION_VERIFIED","match_count":1}
+{"run_id":"35bde26b-cf74-4579-a5a1-128e0bc9e4fa","time":"2026-09-20T23:35:01.309Z","type":"step_completed","step":1,"action":"fill"}
+{"run_id":"35bde26b-cf74-4579-a5a1-128e0bc9e4fa","time":"2026-09-20T23:35:01.374Z","type":"action_verified","step":2,"action":"click","code":"POSTCONDITION_VERIFIED","match_count":1}
+{"run_id":"35bde26b-cf74-4579-a5a1-128e0bc9e4fa","time":"2026-09-20T23:35:01.380Z","type":"business_outcome","code":"MEMBER_NOT_FOUND","step":2,"model_calls":0}

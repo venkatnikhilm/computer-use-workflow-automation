@@ -1,7 +1,7 @@
 {
   "scenario": "slow-load",
   "artifact_sha256": "9aa764a60409c0b50c947ebd4111f4f5e91d72d988bf900efc89a21e44e58e97",
-  "run_id": "07eb23d3-e662-4825-84eb-c944e03fff25",
+  "run_id": "36dbc74f-27b3-42d3-9885-0cd99f773bde",
   "status": "success",
   "model_calls": 0,
   "output_checked": true,

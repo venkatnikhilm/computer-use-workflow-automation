@@ -1,0 +1,140 @@
+{
+  "schema_version": 2,
+  "id": "get_stock_status",
+  "version": 1,
+  "application": "inventory-console",
+  "goal": "Look up the requested item and read available units and warehouse.",
+  "entry_path": "/",
+  "inputs": {
+    "item_code": {
+      "type": "string",
+      "min_length": 6,
+      "max_length": 6,
+      "sensitivity": "public"
+    }
+  },
+  "elements": {
+    "record_identity": {
+      "candidates": [
+        {
+          "by": "row_value",
+          "value": "Item code"
+        }
+      ]
+    },
+    "units": {
+      "candidates": [
+        {
+          "by": "row_value",
+          "value": "Available units"
+        }
+      ]
+    },
+    "warehouse": {
+      "candidates": [
+        {
+          "by": "row_value",
+          "value": "Warehouse"
+        }
+      ]
+    },
+    "not_found": {
+      "candidates": [
+        {
+          "by": "css",
+          "value": "[role=\"status\"]"
+        }
+      ]
+    }
+  },
+  "outputs": {
+    "units": {
+      "element": "units",
+      "field": {
+        "type": "digits",
+        "sensitivity": "public"
+      }
+    },
+    "warehouse": {
+      "element": "warehouse",
+      "field": {
+        "type": "string",
+        "sensitivity": "public"
+      }
+    }
+  },
+  "invariants": [
+    {
+      "when": [
+        {
+          "kind": "path",
+          "value": "/record"
+        }
+      ],
+      "require": [
+        {
+          "kind": "query_equals",
+          "key": "sku",
+          "value": {
+            "input": "item_code"
+          }
+        }
+      ],
+      "code": "IDENTITY_MISMATCH"
+    },
+    {
+      "when": [
+        {
+          "kind": "path",
+          "value": "/record"
+        },
+        {
+          "kind": "count",
+          "element": "record_identity",
+          "equals": 1
+        }
+      ],
+      "require": [
+        {
+          "kind": "text_equals",
+          "element": "record_identity",
+          "value": {
+            "input": "item_code"
+          }
+        }
+      ],
+      "code": "IDENTITY_MISMATCH"
+    }
+  ],
+  "outcomes": [
+    {
+      "when": [
+        {
+          "kind": "path",
+          "value": "/record"
+        },
+        {
+          "kind": "text_equals",
+          "element": "not_found",
+          "value": {
+            "literal": "Item not found"
+          }
+        }
+      ],
+      "code": "ITEM_NOT_FOUND"
+    }
+  ],
+  "completion": [
+    {
+      "kind": "path",
+      "value": "/record"
+    },
+    {
+      "kind": "text_equals",
+      "element": "record_identity",
+      "value": {
+        "input": "item_code"
+      }
+    }
+  ]
+}

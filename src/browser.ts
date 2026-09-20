@@ -1,24 +1,23 @@
+import { observeControls } from "./perception.js";
+import { locate } from "./targeting.js";
 import {
   TenantProfile,
   harborProfile,
   resolveProfileTarget,
   digest,
   type Profile,
+  applicationConfig,
+  type ApplicationConfig,
 } from "./profile.js";
 import { chromium, Browser, Page, Locator } from "playwright";
-import {
-  RunError,
-  StepType,
-  Target,
-  Extraction,
-  defaultExtraction,
-} from "./contracts.js";
+import { RunError, Target } from "./contracts.js";
 import { z } from "zod";
 import { Events } from "./events.js";
 import { Session } from "./session.js";
-import { Policy, defaultPolicy } from "./policy.js";
-import type { ExecutionSurface } from "./surface.js";
-export class Surface implements ExecutionSurface {
+import { defaultPolicy, executionPolicy, type PolicyInput } from "./policy.js";
+export class Surface {
+  readonly config: ApplicationConfig;
+  readonly policy: ReturnType<typeof executionPolicy>;
   browser!: Browser;
   page!: Page;
   violation = false;
@@ -28,6 +27,7 @@ export class Surface implements ExecutionSurface {
     action?: string;
     phase?: string;
     matches?: number;
+    candidate_index?: number;
     visible?: boolean;
     enabled?: boolean;
     expected_path?: string;
@@ -46,35 +46,18 @@ export class Surface implements ExecutionSurface {
     readonly base: string,
     readonly events: Events,
     readonly session: Session,
-    readonly policy = defaultPolicy,
+    policy: PolicyInput = defaultPolicy,
     readonly profile: Profile = harborProfile,
   ) {
     this.deadline = Date.now() + (session.interactive ? 900000 : 180000);
-    Policy.parse(policy);
-    TenantProfile.parse(profile);
+    this.policy = executionPolicy(policy);
+    this.config = applicationConfig(TenantProfile.parse(profile));
     this.session.guidance = async () => {
       if (this.violation || !this.allowed(this.document().url()))
         return "The browser left an allowed destination. Cancel this run and restart.";
-      if (
-        await this.document()
-          .getByRole("heading", { name: "Verify your identity", exact: true })
-          .count()
-      )
-        return "Complete verification in the banking window, then return here and click Resume.";
-      if (await this.document().locator("[data-auth-required]").count())
-        return "Complete sign-in and verification in the banking window. Leave it on the returned screen, then click Resume here.";
-      if (
-        await this.document()
-          .getByRole("heading", { name: "Session expired", exact: true })
-          .count()
-      )
-        return "Restore the demo session in the banking window, then click Resume here.";
-      const blocker = [...this.events.history]
-        .reverse()
-        .find((e) => e.type === "intervention");
-      if (blocker?.code !== "AUTH_REQUIRED")
-        return "Resolve the blocked workflow step in the banking window, then click Resume to validate it. Cancel if it cannot be resolved.";
-      return "The login screen is no longer visible. Leave the banking window on the expected workflow screen and click Resume to validate it.";
+      for (const blocker of this.config.authentication)
+        if (await this.locator(blocker.target).count()) return blocker.guidance;
+      return "Resolve the blocker in the application window, then click Resume to validate the current state.";
     };
   }
   allowed(raw: string) {
@@ -163,24 +146,16 @@ export class Surface implements ExecutionSurface {
     });
   }
   async identity() {
-    const markers = [
-      ["application", "bank-demo-v1", "INCOMPATIBLE_APP"],
-      ["tenant", this.profile.tenant_id, "TENANT_MISMATCH"],
-      [
-        "layout-version",
-        this.profile.layout_version,
-        "UNSUPPORTED_APP_VERSION",
-      ],
-    ];
-    for (const [name, expected, code] of markers) {
-      const marker = this.document().locator(`meta[name="${name}"]`);
-      if (
-        (await marker.count()) !== 1 ||
-        (await marker.getAttribute("content")) !== expected
-      )
-        throw new RunError(code!);
+    for (const marker of this.config.markers) {
+      const element = this.locator(marker.target);
+      if ((await element.count()) !== 1) throw new RunError(marker.code);
+      const actual = marker.attribute
+        ? await element.getAttribute(marker.attribute)
+        : await element.textContent();
+      if (actual !== marker.expected) throw new RunError(marker.code);
     }
   }
+
   check() {
     this.session.assertAutomation();
     if (Date.now() > this.deadline) throw new RunError("RUN_TIMEOUT");
@@ -189,26 +164,19 @@ export class Surface implements ExecutionSurface {
   }
   locator(target: z.infer<typeof Target>): Locator {
     target = resolveProfileTarget(target, this.profile);
-    if (target.by === "label")
-      return this.document().getByLabel(target.value, { exact: true });
-    if (target.by === "role" && target.role)
-      return this.document().getByRole(target.role, {
-        name: target.value,
-        exact: true,
-      });
-    if (target.by === "css") return this.document().locator(target.value);
-    throw new RunError("INVALID_TARGET");
+    return locate(this.document(), target);
   }
-  async conditions(input?: { member_id: string }) {
+
+  async ensureAuthentication(
+    validate: (loginRequired: boolean) => Promise<boolean>,
+  ) {
     this.check();
-    const loginRequired =
-      (await this.document().locator("[data-auth-required]").count()) > 0;
-    if (
-      loginRequired ||
-      (await this.document()
-        .getByRole("heading", { name: "Session expired", exact: true })
-        .count())
-    ) {
+    const blocked = async () => {
+      for (const blocker of this.config.authentication)
+        if (await this.locator(blocker.target).count()) return true;
+      return false;
+    };
+    if (await blocked()) {
       const checkpointURL = this.document().url();
       this.session.step = this.stepIndex;
       await this.evidence();
@@ -220,79 +188,44 @@ export class Surface implements ExecutionSurface {
         )
           return false;
         await this.identity();
-        if (await this.document().locator("[data-auth-required]").count())
-          return false;
-        if (new URL(checkpointURL).pathname === "/account") {
-          if (!input) return false;
-          try {
-            await this.verifyOutput(input);
-            return true;
-          } catch {
-            return false;
-          }
-        }
-        return (
-          loginRequired &&
-          (await this.document()
-            .getByRole("heading", { name: "Session expired", exact: true })
-            .count()) === 0
-        );
+        return !(await blocked()) && (await validate(true));
       });
     }
-    this.check();
-    const current = new URL(this.document().url());
-    const path = current.pathname;
-    if (
-      input &&
-      ["/results", "/member", "/account"].includes(path) &&
-      current.searchParams.get("member") !== input.member_id
-    )
-      throw new RunError("IDENTITY_MISMATCH");
-    if (
-      input &&
-      path === "/member" &&
-      ((await this.locator(defaultExtraction.member).count()) !== 1 ||
-        (await this.locator(defaultExtraction.member).textContent()) !==
-          input.member_id)
-    )
-      throw new RunError("IDENTITY_MISMATCH");
-    if (
-      path === "/results" &&
-      (await this.document()
-        .getByRole("status")
-        .filter({ hasText: /^Member not found$/ })
-        .count())
-    )
-      throw new RunError("MEMBER_NOT_FOUND");
-    if (
-      path === "/member" &&
-      (await this.document()
-        .getByRole("status")
-        .filter({ hasText: /^No savings account$/ })
-        .count())
-    )
-      throw new RunError("NO_SAVINGS_ACCOUNT");
-    if (
-      path === "/member" &&
-      (await this.document()
-        .getByRole("link", { name: this.profile.labels.savings, exact: true })
-        .count()) > 1
-    )
-      throw new RunError("AMBIGUOUS_ACCOUNT");
   }
-  async act(step: StepType, input: { member_id: string }) {
-    this.diagnostics = { action: step.action, phase: "preflight" };
+  // Shared browser mutation gateway. Workflow-specific invariants live in the caller's guard.
+  async performAction(
+    step: {
+      action: "fill" | "click";
+      target: z.infer<typeof Target>;
+      input?: string;
+      postcondition?:
+        | { kind: "path"; value: string }
+        | { kind: "field_equals_input"; input: string };
+    },
+    input: Record<string, string>,
+    guard: () => Promise<void>,
+    resolvedTarget?: Locator,
+  ) {
+    const candidateIndex = resolvedTarget
+      ? this.diagnostics.candidate_index
+      : undefined;
+    this.diagnostics = {
+      action: step.action,
+      phase: "preflight",
+      candidate_index: candidateIndex,
+    };
     this.check();
     if (!this.policy.actions.includes(step.action))
       throw new RunError("POLICY_BLOCKED");
-    await this.conditions(input);
+    await guard();
     await this.identity();
-    const target = this.locator(step.target);
+    const target = resolvedTarget ?? this.locator(step.target);
     const count = await target.count();
     this.diagnostics = {
       action: step.action,
       phase: "resolve_target",
       matches: count,
+      candidate_index: candidateIndex,
     };
     if (count !== 1)
       throw new RunError(count ? "AMBIGUOUS_TARGET" : "TARGET_NOT_FOUND");
@@ -323,33 +256,32 @@ export class Surface implements ExecutionSurface {
         buttonType: el instanceof HTMLButtonElement ? el.type : null,
       };
     });
-    const permittedSearchForm = Boolean(
+    const permittedReadForm = Boolean(
       info.action &&
       this.allowed(info.action) &&
-      new URL(info.action).pathname === this.policy.search_form &&
+      this.policy.read_forms.includes(new URL(info.action).pathname) &&
       info.method === "get" &&
       ["", "_self"].includes(info.formTarget),
     );
-    const canonicalLabels: Record<string, string> = {
-      [this.profile.labels.members]: "Members",
-      [this.profile.labels.open_member]: "Open member",
-      [this.profile.labels.savings]: "Savings",
-      [this.profile.labels.search]: "Search",
-    };
-    const canonicalText = canonicalLabels[info.text ?? ""] ?? info.text;
+    const translated = this.config.overrides.find(
+      (entry) => entry.to.by === "role" && entry.to.value === info.text,
+    );
+    const canonicalText = translated?.from.value ?? info.text;
     this.check();
     if (step.action === "fill") {
       if (
         info.tag !== "INPUT" ||
         !["text", "search"].includes(info.inputType ?? "") ||
-        !permittedSearchForm ||
+        !permittedReadForm ||
         !this.policy.fill_names.includes(info.name ?? "") ||
         !step.input
       )
         throw new RunError("POLICY_BLOCKED");
       this.diagnostics.phase = "dispatch";
-      await target.fill(input.member_id);
-      if ((await target.inputValue()) !== input.member_id)
+      if (!Object.hasOwn(input, step.input))
+        throw new RunError("INVALID_BINDING");
+      await target.fill(input[step.input]!);
+      if ((await target.inputValue()) !== input[step.input])
         throw new RunError("FIELD_NOT_SET");
     } else {
       const safeLink =
@@ -358,12 +290,12 @@ export class Surface implements ExecutionSurface {
         ["", "_self"].includes(info.linkTarget) &&
         this.allowed(new URL(info.href, this.base).href) &&
         this.policy.link_labels.includes(canonicalText ?? "");
-      const safeSearch =
+      const safeSubmit =
         info.tag === "BUTTON" &&
-        canonicalText === "Search" &&
+        this.policy.submit_labels.includes(canonicalText ?? "") &&
         info.buttonType === "submit" &&
-        permittedSearchForm;
-      if (!safeLink && !safeSearch) throw new RunError("POLICY_BLOCKED");
+        permittedReadForm;
+      if (!safeLink && !safeSubmit) throw new RunError("POLICY_BLOCKED");
       const before = this.document().url();
       this.diagnostics.phase = "dispatch";
       await target.click();
@@ -403,73 +335,21 @@ export class Surface implements ExecutionSurface {
       action: step.action,
       postcondition:
         step.action === "fill"
-          ? { kind: "field_equals_input" as const, input: "member_id" as const }
+          ? { kind: "field_equals_input" as const, input: step.input! }
           : {
               kind: "path" as const,
               value: new URL(this.document().url()).pathname,
             },
       target:
         step.action === "fill"
-          ? { by: "label" as const, value: "Member ID" }
+          ? step.target
           : {
               by: "role" as const,
               role: info.tag === "A" ? ("link" as const) : ("button" as const),
               value: canonicalText!,
             },
-      ...(step.action === "fill" ? { input: "member_id" as const } : {}),
+      ...(step.action === "fill" ? { input: step.input! } : {}),
     };
-  }
-  async complete(input: { member_id: string }, extraction = defaultExtraction) {
-    await this.conditions(input);
-    return this.verifyOutput(input, extraction);
-  }
-  async verifyOutput(
-    input: { member_id: string },
-    extraction = defaultExtraction,
-  ) {
-    this.diagnostics = { phase: "verify_outputs" };
-    Extraction.parse(extraction);
-    if (this.violation || !this.allowed(this.document().url()))
-      throw new RunError("POLICY_BLOCKED");
-    await this.identity();
-    if ((await this.locator(extraction.account_kind).count()) !== 1)
-      throw new RunError("COMPLETION_NOT_MET");
-    for (const target of [
-      extraction.member,
-      extraction.account_kind,
-      extraction.balance,
-      extraction.currency,
-    ]) {
-      const locator = this.locator(target);
-      if ((await locator.count()) !== 1 || !(await locator.isVisible()))
-        throw new RunError("OUTPUT_TARGET_INVALID");
-    }
-    if (
-      (await this.locator(extraction.member).textContent()) !==
-        input.member_id ||
-      (await this.locator(extraction.account_kind).textContent()) !== "savings"
-    )
-      throw new RunError("IDENTITY_MISMATCH");
-    const balance = await this.locator(extraction.balance).textContent();
-    const currency = await this.locator(extraction.currency).textContent();
-    if (
-      !balance ||
-      !/^[-]?\d+\.\d{2}$/.test(balance) ||
-      !currency ||
-      !["USD"].includes(currency)
-    )
-      throw new RunError("INVALID_OUTPUT");
-    return { balance, currency };
-  }
-  async canResumeAction(step: StepType) {
-    const target = this.locator(step.target);
-    return (
-      !this.violation &&
-      this.allowed(this.document().url()) &&
-      (await target.count()) === 1 &&
-      (await target.isVisible()) &&
-      (await target.isEnabled())
-    );
   }
   async intervene(code: string, validate: () => Promise<boolean>) {
     await this.evidence();
@@ -480,6 +360,7 @@ export class Surface implements ExecutionSurface {
   async observe() {
     return {
       path: new URL(this.document().url()).pathname,
+      controls: (await observeControls(this.document())).flat(),
       snapshot: (await this.document().locator("body").ariaSnapshot()).slice(
         0,
         12000,

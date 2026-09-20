@@ -1,0 +1,11 @@
+{"run_id":"b7b17fde-ff21-4bd7-90aa-f74ffa9060ae","time":"2026-09-20T22:21:34.503Z","type":"profile_verified","profile_digest":"bd830cb5ec409773b971f361ae36a12ab07810a1d68d54595d99c319bcb13c26","tenant_id":"harbor"}
+{"run_id":"b7b17fde-ff21-4bd7-90aa-f74ffa9060ae","time":"2026-09-20T22:21:34.504Z","type":"replay_started","model_calls":0,"artifact_digest":"716ebf1ab8d560c24f0ed4c70910dfbe53b5b0458fc3285d86d53d037c8b7e5b"}
+{"run_id":"b7b17fde-ff21-4bd7-90aa-f74ffa9060ae","time":"2026-09-20T22:21:34.560Z","type":"action_verified","step":0,"action":"click","code":"POSTCONDITION_VERIFIED","match_count":1}
+{"run_id":"b7b17fde-ff21-4bd7-90aa-f74ffa9060ae","time":"2026-09-20T22:21:34.564Z","type":"step_completed","step":0,"action":"click"}
+{"run_id":"b7b17fde-ff21-4bd7-90aa-f74ffa9060ae","time":"2026-09-20T22:21:34.585Z","type":"action_verified","step":1,"action":"fill","code":"POSTCONDITION_VERIFIED","match_count":1}
+{"run_id":"b7b17fde-ff21-4bd7-90aa-f74ffa9060ae","time":"2026-09-20T22:21:34.589Z","type":"step_completed","step":1,"action":"fill"}
+{"run_id":"b7b17fde-ff21-4bd7-90aa-f74ffa9060ae","time":"2026-09-20T22:21:34.666Z","type":"action_verified","step":2,"action":"click","code":"POSTCONDITION_VERIFIED","match_count":1}
+{"run_id":"b7b17fde-ff21-4bd7-90aa-f74ffa9060ae","time":"2026-09-20T22:21:34.670Z","type":"step_completed","step":2,"action":"click"}
+{"run_id":"b7b17fde-ff21-4bd7-90aa-f74ffa9060ae","time":"2026-09-20T22:21:34.723Z","type":"action_verified","step":3,"action":"click","code":"POSTCONDITION_VERIFIED","match_count":1}
+{"run_id":"b7b17fde-ff21-4bd7-90aa-f74ffa9060ae","time":"2026-09-20T22:21:34.729Z","type":"step_completed","step":3,"action":"click"}
+{"run_id":"b7b17fde-ff21-4bd7-90aa-f74ffa9060ae","time":"2026-09-20T22:21:34.742Z","type":"success","assisted":false,"model_calls":0}

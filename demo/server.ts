@@ -40,7 +40,7 @@ export async function startDemo(
       if (scenario === "slow") await new Promise((r) => setTimeout(r, 700));
       body = `<h1>Search results</h1>${known ? `<a href="/member?member=${safe}">Open member</a>` : '<p role="status">Member not found</p>'}`;
     } else if (url.pathname === "/member")
-      body = `<h1>Member details</h1><p>Member ID: <span id="member-id">${safe}</span></p>${safe === "11111" ? '<p role="status">No savings account</p>' : `<a href="/account?member=${safe}">Savings</a>${safe === "22222" ? `<a href="/account?member=${safe}&extra=1">Savings</a>` : ""}`}`;
+      body = `<h1>Member details</h1><p>Member ID: <span id="member-id">${safe}</span></p><dl><dt>Email</dt><dd id="contact-email">${safe === "67890" ? "jordan" : "alex"}@example.test</dd><dt>Phone</dt><dd id="contact-phone">${safe === "67890" ? "202-555-0182" : "202-555-0141"}</dd><dt>Membership status</dt><dd id="membership-status">active</dd></dl>${safe === "11111" ? '<p role="status">No savings account</p>' : `<a href="/account?member=${safe}">Savings</a>${safe === "22222" ? `<a href="/account?member=${safe}&extra=1">Savings</a>` : ""}`}`;
     else if (url.pathname === "/account") {
       if (scenario === "auth" && !req.headers.cookie?.includes("demo-auth=1"))
         body = `<h1>Session expired</h1><p>Human authentication required</p><form action="/authenticate"><input type="hidden" name="member" value="${safe}"><button>Restore demo session</button></form>`;

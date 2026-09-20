@@ -13,7 +13,7 @@ test("dashboard renders progress, rejects premature resume and shows terminal re
   session.stepLabels = ["Open member directory"];
   session.guidance = async () =>
     "Complete verification in the banking window, then return here and click Resume.";
-  const dashboard = new Dashboard(events, session, "summit");
+  const dashboard = new Dashboard(events, session, "Summit Community Bank");
   const browser = await chromium.launch();
   let ready = false;
   const pending = session.handoff("AUTH_REQUIRED", async () => ready);
@@ -61,7 +61,7 @@ test("dashboard renders progress, rejects premature resume and shows terminal re
 test("dashboard cancellation uses the same handoff path", async () => {
   const events = new Events(mkdtempSync(join(tmpdir(), "dashboard-cancel-")));
   const session = new Session(events, true, 10000);
-  const dashboard = new Dashboard(events, session, "harbor");
+  const dashboard = new Dashboard(events, session, "Harbor Credit Union");
   const pending = session
     .handoff("AUTH_REQUIRED", async () => false)
     .catch((e) => e);

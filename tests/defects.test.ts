@@ -1,3 +1,4 @@
+import { testAction, testRun } from "./browser-helpers.js";
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
@@ -44,7 +45,8 @@ test("read-only Search rejects a button overriding the form to POST", async () =
       .getByRole("button", { name: "Search" })
       .evaluate((el) => el.setAttribute("formmethod", "post"));
     await assert.rejects(
-      x.surface.act(
+      testAction(
+        x.surface,
         {
           action: "click",
           target: { by: "role", role: "button", value: "Search" },
@@ -65,7 +67,8 @@ test("member-name matching alone cannot authorize filling a password input", asy
       .getByLabel("Member ID")
       .evaluate((el) => el.setAttribute("type", "password"));
     await assert.rejects(
-      x.surface.act(
+      testAction(
+        x.surface,
         {
           action: "fill",
           target: { by: "label", value: "Member ID" },

@@ -1,0 +1,102 @@
+{
+  "schema_version": 1,
+  "step": 1,
+  "code": "AMBIGUOUS_TARGET",
+  "route": "/lookup",
+  "ownership": "automation",
+  "framed": false,
+  "diagnostics": {
+    "action": "click",
+    "phase": "resolve_target",
+    "matches": 2,
+    "candidate_index": 0,
+    "visible": true,
+    "enabled": true,
+    "expected_path": "/lookup",
+    "checkpoint_passed": true
+  },
+  "structure": {
+    "tags": [
+      {
+        "tag": "MAIN",
+        "role": null
+      },
+      {
+        "tag": "H1",
+        "role": null
+      },
+      {
+        "tag": "FORM",
+        "role": null
+      },
+      {
+        "tag": "TABLE",
+        "role": null
+      },
+      {
+        "tag": "TBODY",
+        "role": null
+      },
+      {
+        "tag": "TR",
+        "role": null
+      },
+      {
+        "tag": "TH",
+        "role": null
+      },
+      {
+        "tag": "SPAN",
+        "role": null
+      },
+      {
+        "tag": "TD",
+        "role": null
+      },
+      {
+        "tag": "DIV",
+        "role": null
+      },
+      {
+        "tag": "INPUT",
+        "role": null
+      },
+      {
+        "tag": "TR",
+        "role": null
+      },
+      {
+        "tag": "TH",
+        "role": null
+      },
+      {
+        "tag": "SPAN",
+        "role": null
+      },
+      {
+        "tag": "TD",
+        "role": null
+      },
+      {
+        "tag": "DIV",
+        "role": null
+      },
+      {
+        "tag": "INPUT",
+        "role": null
+      },
+      {
+        "tag": "BUTTON",
+        "role": null
+      },
+      {
+        "tag": "FORM",
+        "role": null
+      },
+      {
+        "tag": "BUTTON",
+        "role": null
+      }
+    ]
+  }
+}

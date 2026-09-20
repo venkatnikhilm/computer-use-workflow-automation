@@ -1,5 +1,5 @@
 import { Dashboard } from "./dashboard.js";
-import { TenantProfile, harborProfile } from "./profile.js";
+import { TenantProfile, harborProfile, applicationConfig } from "./profile.js";
 import { readFileSync, writeFileSync, renameSync, mkdirSync } from "node:fs";
 import { Events } from "./events.js";
 import { Session } from "./session.js";
@@ -7,6 +7,8 @@ import { Surface } from "./browser.js";
 import { replay } from "./replay.js";
 import { Policy, defaultPolicy } from "./policy.js";
 import { RunError } from "./contracts.js";
+import { Task, Workflow, validateParameters } from "./workflow-contracts.js";
+import { normalizeCapability, loadSavingsTask } from "./compatibility.js";
 try {
   process.loadEnvFile(".env");
 } catch {}
@@ -30,32 +32,54 @@ const surface = new Surface(
   profile,
 );
 const dashboard = session.interactive
-  ? new Dashboard(events, session, profile.tenant_id)
+  ? new Dashboard(events, session, applicationConfig(profile).display_name)
   : undefined;
 try {
+  const operation =
+    mode === "discover-workflow"
+      ? "discover"
+      : mode === "replay-workflow"
+        ? "replay"
+        : mode;
+  if (operation !== "discover" && operation !== "replay")
+    throw new RunError("INVALID_COMMAND");
+  // Preserve historical positional calls; new calls always use a definition + JSON inputs.
+  const historical = !process.argv[3] || /^\d{5}$/.test(process.argv[3]);
+  const definition = historical
+    ? operation === "discover"
+      ? {
+          ...loadSavingsTask(),
+          ...(process.env.GOAL ? { goal: process.env.GOAL } : {}),
+        }
+      : JSON.parse(readFileSync(file, "utf8"))
+    : JSON.parse(readFileSync(process.argv[3]!, "utf8"));
+  const parameters = historical
+    ? { member_id }
+    : JSON.parse(process.argv[4] ?? "{}");
+  const parsed =
+    operation === "discover"
+      ? Task.parse(definition)
+      : Workflow.parse(normalizeCapability(definition));
+  validateParameters(parsed, parameters);
+  session.capabilityId = parsed.id;
   if (dashboard) console.log(`Dashboard: ${await dashboard.start()}`);
   await surface.open();
-  if (mode === "discover") {
-    const { discover } = await import("./discovery.js");
-    const artifact = await discover(
-      process.env.GOAL ??
-        "Find the requested member and return their current savings balance and currency.",
-      { member_id },
-      surface,
-    );
+  if (operation === "discover") {
+    const { discoverWorkflow } = await import("./workflow-discovery.js");
+    const artifact = await discoverWorkflow(definition, parameters, surface);
+    const output = historical
+      ? file
+      : (process.argv[5] ?? `capabilities/${artifact.id}.json`);
     mkdirSync("capabilities", { recursive: true });
-    writeFileSync(file + ".tmp", JSON.stringify(artifact, null, 2));
-    renameSync(file + ".tmp", file);
-    console.log(`Saved ${file}`);
-  } else if (mode === "replay") {
-    const result = await replay(
-      JSON.parse(readFileSync(file, "utf8")),
-      { member_id },
-      surface,
-    );
+    writeFileSync(output + ".tmp", JSON.stringify(artifact, null, 2));
+    renameSync(output + ".tmp", output);
+    console.log(`Saved ${output}`);
+  } else {
+    const result = await replay(definition, parameters, surface);
     console.log(JSON.stringify(result, null, 2));
-    if (result.status === "failure") process.exitCode = 1;
-  } else throw Error("Use discover or replay");
+    if (result.status === "failure" || result.status === "cancelled")
+      process.exitCode = 1;
+  }
 } catch (error) {
   const code = error instanceof RunError ? error.code : "RUN_FAILED";
   events.emit("failure", { code });

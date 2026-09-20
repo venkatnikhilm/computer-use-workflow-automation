@@ -1,0 +1,83 @@
+{
+  "schema_version": 2,
+  "tenant_id": "warehouse-west",
+  "application": "inventory-console",
+  "display_name": "Warehouse West",
+  "base_url": "http://127.0.0.1:4182/",
+  "markers": [
+    {
+      "target": {
+        "by": "css",
+        "value": "body"
+      },
+      "attribute": "data-product",
+      "expected": "inventory-console",
+      "code": "INCOMPATIBLE_APP"
+    },
+    {
+      "target": {
+        "by": "css",
+        "value": "body"
+      },
+      "attribute": "data-workspace",
+      "expected": "warehouse-west",
+      "code": "TENANT_MISMATCH"
+    },
+    {
+      "target": {
+        "by": "css",
+        "value": "body"
+      },
+      "attribute": "data-release",
+      "expected": "2026.1",
+      "code": "UNSUPPORTED_APP_VERSION"
+    }
+  ],
+  "authentication": [],
+  "overrides": [
+    {
+      "from": {
+        "by": "role",
+        "value": "Stock lookup",
+        "role": "link"
+      },
+      "to": {
+        "by": "role",
+        "value": "Inventory search",
+        "role": "link"
+      }
+    },
+    {
+      "from": {
+        "by": "near_text",
+        "value": "Item code"
+      },
+      "to": {
+        "by": "near_text",
+        "value": "Part number"
+      }
+    },
+    {
+      "from": {
+        "by": "row_value",
+        "value": "Item code"
+      },
+      "to": {
+        "by": "row_value",
+        "value": "Part number"
+      }
+    },
+    {
+      "from": {
+        "by": "role",
+        "value": "Find stock",
+        "role": "button"
+      },
+      "to": {
+        "by": "role",
+        "value": "Locate",
+        "role": "button"
+      }
+    }
+  ]
+}

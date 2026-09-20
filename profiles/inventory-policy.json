@@ -1,0 +1,9 @@
+{
+  "schema_version": 2,
+  "routes": ["/", "/lookup", "/record"],
+  "actions": ["click", "fill"],
+  "link_labels": ["Stock lookup"],
+  "fill_names": ["sku"],
+  "read_forms": ["/record"],
+  "submit_labels": ["Find stock"]
+}

@@ -1,0 +1,11 @@
+{"run_id":"b9cb88f8-2054-491a-b59c-e990e692e145","time":"2026-09-20T23:45:40.818Z","type":"profile_verified","profile_digest":"bd830cb5ec409773b971f361ae36a12ab07810a1d68d54595d99c319bcb13c26","tenant_id":"harbor"}
+{"run_id":"b9cb88f8-2054-491a-b59c-e990e692e145","time":"2026-09-20T23:45:40.819Z","type":"replay_started","model_calls":0,"artifact_digest":"716ebf1ab8d560c24f0ed4c70910dfbe53b5b0458fc3285d86d53d037c8b7e5b"}
+{"run_id":"b9cb88f8-2054-491a-b59c-e990e692e145","time":"2026-09-20T23:45:40.827Z","type":"target_resolved","candidate_index":0,"match_count":1}
+{"run_id":"b9cb88f8-2054-491a-b59c-e990e692e145","time":"2026-09-20T23:45:40.878Z","type":"action_verified","step":0,"action":"click","code":"POSTCONDITION_VERIFIED","match_count":1}
+{"run_id":"b9cb88f8-2054-491a-b59c-e990e692e145","time":"2026-09-20T23:45:40.882Z","type":"step_completed","step":0,"action":"click"}
+{"run_id":"b9cb88f8-2054-491a-b59c-e990e692e145","time":"2026-09-20T23:45:40.886Z","type":"target_resolved","candidate_index":0,"match_count":1}
+{"run_id":"b9cb88f8-2054-491a-b59c-e990e692e145","time":"2026-09-20T23:45:40.903Z","type":"action_verified","step":1,"action":"fill","code":"POSTCONDITION_VERIFIED","match_count":1}
+{"run_id":"b9cb88f8-2054-491a-b59c-e990e692e145","time":"2026-09-20T23:45:40.908Z","type":"step_completed","step":1,"action":"fill"}
+{"run_id":"b9cb88f8-2054-491a-b59c-e990e692e145","time":"2026-09-20T23:45:40.911Z","type":"target_resolved","candidate_index":0,"match_count":1}
+{"run_id":"b9cb88f8-2054-491a-b59c-e990e692e145","time":"2026-09-20T23:45:40.966Z","type":"action_verified","step":2,"action":"click","code":"POSTCONDITION_VERIFIED","match_count":1}
+{"run_id":"b9cb88f8-2054-491a-b59c-e990e692e145","time":"2026-09-20T23:45:40.971Z","type":"business_outcome","code":"MEMBER_NOT_FOUND","step":2,"model_calls":0}

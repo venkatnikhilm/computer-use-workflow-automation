@@ -1,0 +1,14 @@
+{"run_id":"86da7896-ddd1-4206-b910-39fa326d746a","time":"2026-09-20T23:45:33.743Z","type":"profile_verified","profile_digest":"7e0d06bb711edef1e540c96859e655355a651f0372341277812b7a278c24d364","tenant_id":"warehouse-west"}
+{"run_id":"86da7896-ddd1-4206-b910-39fa326d746a","time":"2026-09-20T23:45:33.744Z","type":"replay_started","model_calls":0,"artifact_digest":"c5429291a9efd1dff6ee2769bd1fc0e6751d58cf13ccf8e7fb0ea93ff7c465c7"}
+{"run_id":"86da7896-ddd1-4206-b910-39fa326d746a","time":"2026-09-20T23:45:33.749Z","type":"target_resolved","candidate_index":0,"match_count":1}
+{"run_id":"86da7896-ddd1-4206-b910-39fa326d746a","time":"2026-09-20T23:45:33.804Z","type":"action_verified","step":0,"action":"click","code":"POSTCONDITION_VERIFIED","match_count":1}
+{"run_id":"86da7896-ddd1-4206-b910-39fa326d746a","time":"2026-09-20T23:45:33.807Z","type":"step_completed","step":0,"action":"click"}
+{"run_id":"86da7896-ddd1-4206-b910-39fa326d746a","time":"2026-09-20T23:45:33.809Z","type":"target_resolved","candidate_index":0,"match_count":1}
+{"run_id":"86da7896-ddd1-4206-b910-39fa326d746a","time":"2026-09-20T23:45:33.825Z","type":"action_verified","step":1,"action":"fill","code":"POSTCONDITION_VERIFIED","match_count":1}
+{"run_id":"86da7896-ddd1-4206-b910-39fa326d746a","time":"2026-09-20T23:45:33.829Z","type":"step_completed","step":1,"action":"fill"}
+{"run_id":"86da7896-ddd1-4206-b910-39fa326d746a","time":"2026-09-20T23:45:33.832Z","type":"target_resolved","candidate_index":0,"match_count":1}
+{"run_id":"86da7896-ddd1-4206-b910-39fa326d746a","time":"2026-09-20T23:45:33.892Z","type":"action_verified","step":2,"action":"click","code":"POSTCONDITION_VERIFIED","match_count":1}
+{"run_id":"86da7896-ddd1-4206-b910-39fa326d746a","time":"2026-09-20T23:45:33.897Z","type":"step_completed","step":2,"action":"click"}
+{"run_id":"86da7896-ddd1-4206-b910-39fa326d746a","time":"2026-09-20T23:45:33.906Z","type":"target_resolved","candidate_index":0,"match_count":1}
+{"run_id":"86da7896-ddd1-4206-b910-39fa326d746a","time":"2026-09-20T23:45:33.908Z","type":"target_resolved","candidate_index":0,"match_count":1}
+{"run_id":"86da7896-ddd1-4206-b910-39fa326d746a","time":"2026-09-20T23:45:33.917Z","type":"success","assisted":false,"model_calls":0}

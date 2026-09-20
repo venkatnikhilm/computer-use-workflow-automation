@@ -1,0 +1,38 @@
+{
+  "schema_version": 2,
+  "tenant_id": "warehouse-east",
+  "application": "inventory-console",
+  "display_name": "Warehouse East",
+  "base_url": "http://127.0.0.1:4182/",
+  "markers": [
+    {
+      "target": {
+        "by": "css",
+        "value": "body"
+      },
+      "attribute": "data-product",
+      "expected": "inventory-console",
+      "code": "INCOMPATIBLE_APP"
+    },
+    {
+      "target": {
+        "by": "css",
+        "value": "body"
+      },
+      "attribute": "data-workspace",
+      "expected": "warehouse-east",
+      "code": "TENANT_MISMATCH"
+    },
+    {
+      "target": {
+        "by": "css",
+        "value": "body"
+      },
+      "attribute": "data-release",
+      "expected": "2026.1",
+      "code": "UNSUPPORTED_APP_VERSION"
+    }
+  ],
+  "authentication": [],
+  "overrides": []
+}

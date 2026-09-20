@@ -13,6 +13,7 @@ export class Events {
     type: string,
     fields: {
       match_count?: number;
+      candidate_index?: number;
       profile_digest?: string;
       artifact_digest?: string;
       tenant_id?: string;

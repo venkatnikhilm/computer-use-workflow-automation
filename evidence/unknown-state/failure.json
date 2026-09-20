@@ -1,12 +1,50 @@
 {
-  "tags": [
-    {
-      "tag": "H1",
-      "role": null
-    },
-    {
-      "tag": "P",
-      "role": null
-    }
-  ]
+  "schema_version": 1,
+  "step": 4,
+  "code": "COMPLETION_NOT_MET",
+  "route": "/account",
+  "ownership": "automation",
+  "framed": false,
+  "diagnostics": {
+    "action": "click",
+    "phase": "checkpoint",
+    "matches": 1,
+    "candidate_index": 0,
+    "visible": true,
+    "enabled": true,
+    "expected_path": "/account",
+    "checkpoint_passed": true
+  },
+  "structure": {
+    "tags": [
+      {
+        "tag": "HEADER",
+        "role": null
+      },
+      {
+        "tag": "STRONG",
+        "role": null
+      },
+      {
+        "tag": "SMALL",
+        "role": null
+      },
+      {
+        "tag": "MAIN",
+        "role": null
+      },
+      {
+        "tag": "H1",
+        "role": null
+      },
+      {
+        "tag": "P",
+        "role": null
+      },
+      {
+        "tag": "FOOTER",
+        "role": null
+      }
+    ]
+  }
 }

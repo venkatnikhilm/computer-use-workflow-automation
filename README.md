@@ -1,186 +1,332 @@
-# Capability Lab
+# Computer-use workflow automation
 
-An LLM learns a member lookup through a real browser. The resulting typed capability replays with new inputs without calling a model. The local target is a fictional, server-rendered banking application with no automation-only test IDs.
+Learn a workflow through an AI-driven browser run, save its verified actions as a typed capability, and replay it for new inputs without further model decisions.
 
-**Verified:** a genuine Gemini 3.5 Flash Lite discovery produced `capabilities/savings.json` in five API requests. That unchanged artifact returned another member's balance and handled missing members/accounts, ambiguous accounts, slow loading, unknown state, and a simulated operator takeover. See [evidence](evidence/README.md). A subsequent user-operated login and verification handoff also completed successfully; its original sanitized logs are preserved in [human-login evidence](evidence/human-login/summary.json).
+The target is a local, fictional banking staff application. Two genuinely discovered workflows are demonstrated: **read a savings balance** and **retrieve member contact details**. Automation checks identity and policy, returns structured outcomes, and can pause for a person to take over the same browser session.
 
-## Reviewer starting point
+```text
+Goal + task definition → AI observes and acts → verified capability file
+Capability + new inputs → deterministic browser execution → checked result
+                                      ↓ blocker
+                              human takeover → validate → resume
+```
 
-Read [REPORT.md](REPORT.md) for the implemented design, trade-offs, and explicit limits. See [evidence/README.md](evidence/README.md) for the recorded demonstrations.
+## Start here
 
-After setup, `npm run verify:capability` demonstrates seven outcomes and `npm run verify:tenants` demonstrates reuse across two variants, without a model key. Genuine discovery evidence is already checked in. To observe human intervention, use the staff-login commands below and open the **Dashboard URL** in a separate regular browser window.
+**Yes—please run the verification commands.** They exercise real browser interactions, require no API key, and start their own local servers. Repeating live AI discovery is optional and consumes provider quota.
 
-## Setup
+| What you want to do              | Where to start                                                        |
+| -------------------------------- | --------------------------------------------------------------------- |
+| Install and check the submission | [Setup and automated verification](#setup-and-automated-verification) |
+| Run a saved workflow yourself    | [Interactive use](#run-a-saved-workflow-yourself)                     |
+| Watch login and human takeover   | [Human handoff](#watch-login-and-human-handoff)                       |
+| Repeat AI discovery              | [Optional discovery](#optional-repeat-ai-discovery)                   |
+| Inspect the design and proof     | [REPORT.md](REPORT.md) and [evidence/README.md](evidence/README.md)   |
 
-Requires Node.js 22+ and a Chromium installation:
+## Setup and automated verification
+
+Prerequisites: **Node.js 22+**, npm (included with Node), Git, and enough permissions to launch Chromium and listen on localhost. Installation needs internet access to download dependencies and Chromium. Tests and replay need no model credentials or external banking service.
 
 ```sh
+git clone https://github.com/venkatnikhilm/computer-use-workflow-automation.git
+cd computer-use-workflow-automation
+node --version
 npm ci
 npx playwright install chromium
+```
+
+If you received a source archive, extract it and open a terminal in the directory containing `package.json` instead of cloning. On Linux, if Chromium reports missing system libraries, use `npx playwright install --with-deps chromium` (system-package installation may request administrator permission).
+
+**Recommended reviewer checks:**
+
+```sh
 npm run check
 npm test
-```
-
-No model key is required for tests or replay. All account data is fictional. This project is a take-home demonstration, not a production banking integration.
-
-## Start with the saved capability — no model calls
-
-Terminal 1:
-
-```sh
-npm run demo
-```
-
-Terminal 2:
-
-```sh
-npm run replay -- 67890 capabilities/savings.json
-npm run replay -- 99999 capabilities/savings.json
-```
-
-The first returns the fictional balance `2450.75 USD`; the second returns the business outcome `MEMBER_NOT_FOUND`. Inputs are five-character strings so leading zeros are preserved. The application also has member `11111` without savings and `22222` with ambiguous savings accounts.
-
-Run all seven evidence scenarios, with an isolated local server per scenario:
-
-```sh
+npm run verify:contact
 npm run verify:capability
 ```
 
-This executes the checked-in **genuinely discovered artifact**, uses no model, and refreshes the replay evidence. The handoff scenario uses an explicitly simulated operator. The original live discovery events are preserved.
+Expected results:
 
-## Discover a new capability
+- `check`: TypeScript validation succeeds without errors.
+- `test`: all 82 tests pass, including browser execution, policy, identity checks, authentication, and handoff. Test decisions/operators are simulated where explicitly indicated.
+- `verify:contact`: six runs of the genuinely discovered contact artifact across two bank layouts. Four succeed; two return the expected `MEMBER_NOT_FOUND` business outcome. All use zero model calls.
+- `verify:capability`: seven runs of the genuinely discovered savings artifact, including missing records/accounts, ambiguous accounts, slow responses, an intentional unknown-state failure, and simulated human takeover. The command exits successfully when every expected result matches.
 
-Copy `.env.example` to `.env`, and set `GEMINI_API_KEY` and `GEMINI_MODEL`. Use an AI Studio free-tier project with paid billing disabled for zero spending. The model name alone does not determine billing. Keep `.env` out of Git.
+No demo server or `.env` is needed for these checks. Browsers run headlessly; the harness closes its servers and browsers on completion. A localhost Operator URL printed during a test is handled by the simulated operator—you do not need to open it. Verification scripts refresh their corresponding evidence directories, so a dirty Git working tree afterward is expected. Original contact discovery and original user-run replay logs are preserved separately.
 
-With the demo already running:
+For additional coverage:
 
-```sh
-npm run discover -- 12345 capabilities/new-savings.json
-npm run replay -- 67890 capabilities/new-savings.json
-```
+| Command                    | What it checks                                                                                             |
+| -------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `npm run verify:workflows` | Eight runs: two development fixtures × two members × two layouts; model requests disabled                  |
+| `npm run verify:tenants`   | Original discovered savings artifact reused across Harbor and Summit                                       |
+| `npm run verify:legacy`    | Same savings artifact inside a legacy iframe; duplicate controls deliberately fail with `AMBIGUOUS_TARGET` |
 
-Discovery receives a natural-language goal and live page observations. It chooses individual controls, not a prewritten action sequence. Configure the goal with `GOAL` and target with `DEMO_URL`:
+A printed `failure` in an intentional failure scenario is expected. A nonzero verifier exit code or assertion error means verification did not pass.
 
-```sh
-GOAL="Look up the requested member and read their current savings balance and currency" DEMO_URL=http://127.0.0.1:4173 npm run discover -- 12345 capabilities/new-savings.json
-```
+## Two optional stretch goals
 
-The supported capability contract is specifically the savings lookup; arbitrary banking workflows are outside this slice. Discovery records successful UI actions and verifies completion deterministically after each action. The builder adds an authored extraction/condition contract; it does not claim to have learned error states that were never encountered. A successful lookup normally takes five model requests.
+This submission implements **cross-tenant reuse** and an **agent-facing capability interface**. The tenant verifiers demonstrate reuse of unchanged artifacts with per-layout mappings. The HTTP interface lets a program or agent discover typed capability descriptions and invoke a registered workflow by name.
 
-The saved artifact contains parameter bindings, typed output declarations, explicit extraction targets, step checkpoints, a versioned application condition profile, and discovery provenance. Replay imports an `ExecutionSurface` interface rather than Playwright or a model client. The browser adapter enforces the actual control policy and rejects ambiguous matches.
-
-## Request controls and cost
-
-Defaults: six total API dispatches per run, 15 seconds between request starts, no automatic retries, and a 30-second per-request timeout including body consumption. Change these with `MODEL_MAX_CALLS`, `MODEL_MIN_INTERVAL_MS`, `MODEL_MAX_RETRIES`, and `MODEL_TIMEOUT_MS`. Optional 502/503/504 retries consume the same budget. A 429 or transport failure stops the run.
-
-Budgets are per process/run; they are not a project-wide quota tracker. Check your account's limits before a live run. Logs retain HTTP status, a derived quota scope when available, and bounded retry delay; they omit raw provider messages and credentials. Historical `FREE_QUOTA_EXHAUSTED` events were overly broad and do not prove daily quota exhaustion.
-
-Tests mock model responses. They never load `.env` or send live model requests. The included development artifact is labelled `development-fixture` and is not used to claim genuine discovery.
-
-## Human takeover
-
-Use a separate demo port so the normal demo can remain running:
+Run the API demonstration with no key or manually started server:
 
 ```sh
-PORT=4174 SCENARIO=auth npm run demo
+npm run verify:api
 ```
 
-In another terminal:
+Expected: `Catalog discovery: success`, followed by `get_member_contact via HTTP: success, typed outputs checked, zero model calls`. This programmatic caller lists the catalog, selects the contact capability, invokes it, and checks the returned fields. It demonstrates the callable interface; it does not claim that an LLM selected the tool. Sanitized proof is saved in [API evidence](evidence/capability-api/summary.json).
+
+To try the API manually, start the normal demo in Terminal 1:
 
 ```sh
-DEMO_URL=http://127.0.0.1:4174 HEADED=1 npm run replay -- 12345 capabilities/savings.json
+PORT=4180 npm run demo
 ```
 
-The headed browser stops at “Session expired.” Open the Dashboard URL printed in the terminal in a separate regular browser window. In the **same banking window**, click “Restore demo session,” then Resume in the dashboard. No real credentials are involved. The operator page shows the run, step, capability, and reason. Premature or duplicate resume is rejected; cancellation and a five-minute timeout are supported. Automation verifies the resulting state before proceeding. The local operator link grants control and must not be published.
-
-Control events and manual click/change/submit/navigation event types are recorded without entered values. The operator controls a trusted local window; browser-chrome/OS actions and enforcement against someone directly clicking during automation are outside this minimal mechanism.
-
-## Safety, errors, and evidence
-
-`POLICY_FILE` can load a validated JSON policy; see `src/policy.ts`. Routes and actual controls are checked independently of model instructions. Transfers and unknown actions are blocked. Browser requests outside the allowed origin/routes, WebSockets, service workers, and new windows are blocked or rejected. This is not a full network sandbox.
-
-Member-not-found, no savings account, and ambiguous accounts are business outcomes, checked against the correct screen/member. Loading is bounded; dispatched clicks are never blindly retried. Unknown states return structured failures or request bounded intervention when running headed. Assisted discoveries are not published as unattended capabilities because manual steps are not compiled.
-
-CLI runs write sanitized JSONL events under ignored `runs/`. Rich failure evidence is a structural DOM snapshot containing tags and roles, without raw text or field values. Sensitive outputs go to the invoking terminal, not persisted event logs. Only fictional page data is sent to the provider; using real regulated data would need additional observation redaction and deployment controls.
-
-The implemented design and deliberate cuts are described in [REPORT.md](REPORT.md).
-
-API references: [Playwright contexts](https://playwright.dev/docs/api/class-browsercontext), [Gemini structured output](https://ai.google.dev/gemini-api/docs/structured-output), [Gemini rate limits](https://ai.google.dev/gemini-api/docs/rate-limits).
-
-## Staff login and verification demo
-
-This local, fictional staff portal now offers a username/password screen and a second verification-code screen. Automation pauses while you authenticate in its existing browser. The original saved capability remains unchanged; replay makes no model calls.
-
-In one terminal, from the project directory:
+In Terminal 2:
 
 ```sh
-PORT=4175 SCENARIO=login npm run demo
+DEMO_URL=http://127.0.0.1:4180 API_PORT=4182 npm run api
 ```
 
-In another terminal:
+Copy the freshly printed bearer token into Terminal 3 (the token changes on every API restart):
 
 ```sh
-DEMO_URL=http://127.0.0.1:4175 HEADED=1 npm run replay -- 12345 capabilities/savings.json
+export CAPABILITY_TOKEN='paste-the-token-here'
+curl -s http://127.0.0.1:4182/capabilities \
+  -H "Authorization: Bearer $CAPABILITY_TOKEN"
+curl -s http://127.0.0.1:4182/capabilities/get_member_contact/invoke \
+  -H "Authorization: Bearer $CAPABILITY_TOKEN" \
+  -H 'Content-Type: application/json' \
+  -d '{"arguments":{"customer_ref":"67890"}}'
 ```
 
-1. In the banking window, enter username **demo.teller** and password **DemoBank!2026**, then click **Sign in**.
-2. Enter demo code **482916**, then click **Verify and continue**. Leave the banking window on Member services.
-3. Open the printed **Dashboard URL** in a separate, regular browser window. Click **Resume**. The saved workflow retrieves the balance.
+The catalog contains `get_member_contact` and `get_savings_balance`, each with a description, version, artifact digest, and JSON input/output schemas. Inputs are required strings; unknown fields are rejected. Invocation returns `status`, `run_id`, and either typed `outputs` or an outcome/error code. For savings, use `/capabilities/get_savings_balance/invoke` and `{"arguments":{"member_id":"67890"}}`.
 
-The handoff allows five minutes; each verification challenge lasts two minutes. Wrong credentials/codes show errors. Three incorrect passwords impose a 30-second cooldown for that session; three incorrect codes require restarting sign-in. Early Resume keeps automation paused and offers Resume/Cancel again. Cancel or expiry ends the run. Interactive runs have a 15-minute overall deadline.
+HTTP 200 means execution returned a structured result: inspect `status` to distinguish success, a business outcome, and execution failure. Request errors use 400 (invalid arguments), 401 (access rejected), 404 (unknown capability), 409 (another run is active), 413 (body too large), or 415 (JSON required). Unexpected API errors use 500 without internal exception text.
 
-For an additional interruption while opening the account, stop this demo server and restart it with `SCENARIO=login-expiry`. Run the same replay command: authenticate at entry, resume, then authenticate and resume a second time at the account screen. Each interruption prints a new Operator URL.
+The API binds to localhost, requires its generated token, rejects browser-origin requests, and executes one invocation at a time. It uses a fresh headless browser for each request and always closes it. Browser authentication blockers return `INTERVENTION_REQUIRED`; use the headed CLI for human handoff. Requests cannot change artifact files, the application URL, tenant settings, or policy. Artifacts are loaded at startup; restart to load updated files. This is a synchronous local interface, not a durable job service or production multi-user API. An HTTP disconnect does not cancel a run: do not automatically retry an uncertain invocation. Outputs are returned only to the authenticated caller and are excluded from event logs. Stop both servers with Ctrl+C when finished.
 
-Sessions use opaque, server-held state and HttpOnly, SameSite cookies. Credentials and codes are submitted by POST and are excluded from event logs. The fixed code is a simulation, not a real second factor: no authenticator integration, SMS, or email is involved. This localhost HTTP demo does not implement production banking authentication; accounts and session state are in memory and reset with the server. The original `normal` and `auth` scenarios remain available for reproducible prior evidence.
+## Run a saved workflow yourself
 
-## One capability across two institutions
-
-`npm run verify:tenants` starts both local variants, runs the original discovered artifact for two members at each, checks outputs, and saves sanitized evidence under `evidence/tenant-reuse/`. It needs no model key and leaves the capability unchanged.
-
-Harbor uses the original labels and a description list. Summit uses Customer directory / Customer number / Find customer / View customer / Savings deposit, and an account table with different field attributes. The schema-validated JSON profiles in `profiles/` map known vendor locator slots to these differences. These mappings are authored configuration, not newly learned behavior. Routes and business rules are shared in this stage; this does not demonstrate frames, desktop access, or arbitrary vendor compatibility.
-
-To watch Summit, start its server:
+Keep the server running in **Terminal 1**:
 
 ```sh
-PORT=4176 TENANT=summit npm run demo
+PORT=4180 npm run demo
 ```
 
-Then run in another terminal:
+In **Terminal 2**, from the same project directory:
 
 ```sh
-PROFILE_FILE=profiles/summit.json HEADED=1 npm run replay -- 67890 capabilities/savings.json
+DEMO_URL=http://127.0.0.1:4180 HEADED=0 npm run replay -- capabilities/contact.discovered.v2.json '{"customer_ref":"67890"}'
 ```
 
-If `.env` defines `DEMO_URL`, set `DEMO_URL=http://127.0.0.1:4176` on that replay command; the explicit URL overrides the profile default. Add `SCENARIO=login` to the server command to combine Summit with human login.
+Expected result:
 
-Page markers must match the selected tenant and supported layout version. A wrong tenant or unknown layout stops before workflow actions. Profiles cannot contain steps, permissions, or route overrides; deployment policy remains authoritative after label translation. Label/role targets must still resolve uniquely, and outputs still require matching member/account identity. Profile and artifact digests in new run events hash their JSON serialization; the tenant evidence manifest additionally hashes the exact artifact file bytes.
+```json
+{
+  "status": "success",
+  "outputs": {
+    "email": "jordan@example.test",
+    "phone": "202-555-0182",
+    "membership_status": "active"
+  },
+  "assisted": false
+}
+```
 
-## Operator dashboard
+The AI originally discovered this workflow using a different member. This invocation runs the saved artifact with **zero model calls**. Change `HEADED=0` to `HEADED=1` to watch the browser and receive a separate dashboard URL.
 
-Every `HEADED=1` CLI run now prints a **Dashboard URL** before opening the banking window. Open it in your regular browser, separately from the automated banking window. It shows the institution, capability, completed/current steps, control state, and final outcome. Step labels summarize the saved actions; discovery does not have a prerecorded step list.
-
-When authentication blocks progress, the dashboard explains whether sign-in or verification is needed. Complete that in the banking window, then click **Resume on the dashboard**. The same session validator handles this action; premature Resume keeps the run paused. Cancel is available while awaiting human intervention. Controls are disabled while automation or validation owns the session. The original Operator URL still works as a minimal handoff page, but the dashboard stays the same across multiple interventions.
-
-The final status remains available for 60 seconds after completion, then the command exits. Financial outputs remain in the invoking terminal; they are not added to the dashboard or logs. The dashboard URL grants local operator control and should not be shared. No additional model calls are involved.
-
-
-
-If a demo server was started before a code update, stop and restart it before replay. Older pages without tenant/version markers are rejected explicitly.
-
-## Legacy iframe targeting and diagnostic evidence
-
-Run `npm run verify:legacy` to replay the unchanged discovery artifact inside a named iframe, then deliberately exercise an ambiguous member field. The first run must succeed; the second must stop with `AMBIGUOUS_TARGET`. Evidence is saved under `evidence/legacy/`.
-
-To watch the legacy variant, use two terminals:
+Try the original savings capability against the same server:
 
 ```sh
-PORT=4177 SCENARIO=legacy npm run demo
+DEMO_URL=http://127.0.0.1:4180 HEADED=0 npm run replay -- capabilities/savings.json '{"member_id":"67890"}'
+DEMO_URL=http://127.0.0.1:4180 HEADED=0 npm run replay -- capabilities/savings.json '{"member_id":"99999"}'
 ```
+
+The first returns `2450.75` and `USD`. The second returns `business_outcome` with `MEMBER_NOT_FOUND`. Other fictional members: `12345` has a savings balance of `100.00`; `11111` has no savings account; `22222` has ambiguous savings accounts. Member identifiers are five-character strings, preserving leading zeros.
+
+Stop the server with **Ctrl+C** when finished. CLI replay logs go under ignored `runs/`; output values are returned to the terminal and excluded from persisted events. The contact CLI exits nonzero for failure/cancellation; a business outcome is a valid result.
+
+Commands above use macOS/Linux shell syntax. In PowerShell, set environment variables separately, for example `$env:PORT='4180'; npm run demo` and `$env:DEMO_URL='http://127.0.0.1:4180'` in the replay terminal. Keep the JSON input as one quoted argument.
+
+## What has been verified?
+
+| Artifact                                  | Origin                                               | Demonstrated behavior                                                                                |
+| ----------------------------------------- | ---------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| `capabilities/savings.json`               | Genuine Gemini discovery, five API requests          | Different-input replay, business outcomes, bounded waiting, tenant/legacy reuse, handoff             |
+| `capabilities/contact.discovered.v2.json` | Genuine Gemini discovery, four API requests          | User-run different-input replay; automated output checks and missing-member outcomes on both layouts |
+| `capabilities/examples/*.v2.json`         | Simulated discovery decisions against a real browser | Both task definitions execute through the same engine; explicitly development fixtures               |
+
+[Contact evidence](evidence/contact-v2/manifest.json) binds the replay runs to the exact artifact hash. Original discovery and user-run replay events are retained under `evidence/contact-v2/`. [Savings evidence](evidence/manifest.json) and the separate [user-operated login evidence](evidence/human-login/summary.json) remain available. Logs intentionally omit input/output values; automated verifiers compare outputs in memory before writing `output_checked: true`.
+
+There is one discovery loop and one replay interpreter. Inputs, outputs, named controls, identity invariants, and outcomes are task data. A small compatibility adapter translates the original savings artifact into the common format in memory; saved artifact bytes and historical discovery evidence remain unchanged. Schema numbers describe file formats, not separate engines. Historical positional CLI calls and `discover:workflow` / `replay:workflow` aliases still delegate to these same entry points.
+
+## Watch login and human handoff
+
+Start a separate authenticated demo in Terminal 1:
 
 ```sh
-PROFILE_FILE=profiles/legacy.json DEMO_URL=http://127.0.0.1:4177 HEADED=1 npm run replay -- 67890 capabilities/savings.json
+PORT=4181 SCENARIO=login npm run demo
 ```
 
-The profile selects exactly one named frame and maps the unlabeled member field through a scoped CSS selector. Navigation/checkpoints and extraction use the frame's document, not the outer shell URL. Duplicate frames or controls fail instead of selecting a first match. This demonstrates one configured same-origin iframe, a non-semantic input, and table markup; arbitrary nested frames, cross-origin authentication, and visual-only targeting remain outside this demonstration. No new AI discovery is claimed for the legacy variant.
+Run in Terminal 2:
 
-New failure snapshots include a safe route (no query string), step, ownership, phase, target match count/actionability when measured, and checkpoint status when evaluated, plus structural tags and allowlisted roles. Successful actions log `POSTCONDITION_VERIFIED`. Raw locators, page text, input values, balances, and credentials are omitted. Older historical evidence retains its original schema.
+```sh
+DEMO_URL=http://127.0.0.1:4181 HEADED=1 npm run replay -- capabilities/contact.discovered.v2.json '{"customer_ref":"67890"}'
+```
+
+1. Open the printed **Dashboard URL** in your regular browser. The automated banking window is a separate window.
+2. In the banking window, sign in with username **demo.teller** and password **DemoBank!2026**.
+3. Enter the fictional verification code **482916** and click **Verify and continue**. Leave that window on Member services.
+4. Click **Resume in the dashboard**. Automation validates the restored session and retrieves the contact details. The result reports `assisted: true`.
+
+Premature Resume leaves the run paused; complete the banking-window steps and retry. Authentication challenges last two minutes; intervention allows five minutes. If either expires, restart the replay to get a fresh session. Cancel is available while awaiting intervention. Dashboard results remain available for 60 seconds after completion before the CLI exits. The Operator URL is an alternative minimal Resume/Cancel page; use the dashboard for the walkthrough.
+
+For a second login interruption midway through the savings workflow, start the server with `SCENARIO=login-expiry` and invoke `npm run replay -- capabilities/savings.json '{"member_id":"12345"}'` with the same `DEMO_URL` and `HEADED=1`. Authenticate and resume at entry, then again when opening the account.
+
+Authentication is a local simulator with a fixed code, not production MFA. Human actions are recorded as event types without typed values. Dashboard/operator URLs are local bearer links and should not be shared.
+
+## Optional: repeat AI discovery
+
+This is the only reviewer path that needs a model key. The checked-in artifacts already demonstrate genuine discovery, so this step is **not required** to test replay or inspect its evidence.
+
+Copy `.env.example` to `.env` only if you do not already have one, then configure `GEMINI_API_KEY` and an available `GEMINI_MODEL`. Never commit the key. For a zero-spending setup, use a provider project with paid billing disabled; a model name alone does not establish billing or quota availability.
+
+With the normal server still running on port 4180:
+
+```sh
+DEMO_URL=http://127.0.0.1:4180 HEADED=0 npm run discover -- tasks/member-contact.json '{"customer_ref":"12345"}' capabilities/contact.new.v2.json
+DEMO_URL=http://127.0.0.1:4180 HEADED=0 npm run replay -- capabilities/contact.new.v2.json '{"customer_ref":"67890"}'
+```
+
+Run the replay only after discovery prints `Saved capabilities/contact.new.v2.json`. Use a new output filename to preserve the submitted artifact. Discovery usually takes about a minute for this task because requests are paced; there may be no intermediate terminal output. Do not start duplicate discovery processes while waiting.
+
+The AI selects the action order from live observations, using declared element keys or exact control descriptors supplied by the observation. Task files contain no prewritten action sequence. Authored task definitions supply field schemas, locators, invariants, exceptional outcomes, and completion assertions; the model does not invent or learn all business semantics from one successful run. Only executed, checked actions enter the artifact. Repeated invalid decisions or lack of progress can request human intervention in headed mode; unattended runs stop with a structured error. Assisted discoveries are rejected because manual steps are not compiled.
+
+To discover the savings task with the same engine:
+
+```sh
+DEMO_URL=http://127.0.0.1:4180 HEADED=0 npm run discover -- tasks/savings.json '{"member_id":"12345"}' capabilities/savings.new.json
+```
+
+All new discoveries use the common artifact format. The original savings file stays readable through the compatibility adapter.
+
+Defaults are six API attempts, at least 15 seconds between requests, no automatic retries, and a 30-second request timeout. Configure these using `MODEL_MAX_CALLS`, `MODEL_MIN_INTERVAL_MS`, `MODEL_MAX_RETRIES`, and `MODEL_TIMEOUT_MS`. A 429 stops the run; optional transient retries consume the same budget. Limits are per run, not shared across processes.
+
+## Architecture and adding a task
+
+```text
+src/workflow-contracts.ts   fields, elements, bindings, and conditions
+src/workflow-discovery.ts  model-driven action selection and recording
+src/workflow-runtime.ts    deterministic conditions, execution, and extraction
+src/discovery.ts           discovery exports and historical call compatibility
+src/replay.ts              shared replay entry point
+src/compatibility.ts       original-artifact conversion; no execution loop
+src/capability-api.ts      typed catalog and named invocation over local HTTP
+src/api-cli.ts             API server entry point
+src/browser.ts             shared browser mutation gateway and authentication
+src/policy.ts              independent deployment permissions
+src/profile.ts             tenant mappings and compatibility markers
+src/session.ts             same-session handoff and control ownership
+src/dashboard.ts           operator progress and Resume/Cancel
+src/events.ts              sanitized events and failure snapshots
+src/targeting.ts           native and table-neighbor locator resolution
+src/perception.ts          observed controls and verified fallback construction
+demo/                      fictional banking and independent inventory applications
+tasks/                     authored task definitions
+capabilities/              discovered artifacts and labeled examples
+profiles/                  Harbor, Summit, and legacy locator configuration
+tests/                     contract, browser, policy, and handoff checks
+scripts/                   reproducible verification harnesses
+evidence/                  curated sanitized runs and manifests
+```
+
+For another supported read-only task, define required input/output fields, output elements, optional action elements, route-scoped identity checks, outcomes, and completion conditions in a task JSON file. Then discover its action sequence and verify it with different inputs and failure cases. Locator candidates are tried in order: absent controls allow fallback; ambiguous controls stop. Completion verifies business identity, not merely a matching selector.
+
+The contact task uses `customer_ref` rather than the savings task's `member_id`; it returns three contact fields instead of money. A member without savings can still have a successful contact lookup. These differences exercise configuration-driven behavior in the same interpreter.
+
+A new application using the supported HTML controls requires an application profile, independent policy, and task definition. A new control kind, desktop surface, or write operation requires executor changes. Artifacts cannot expand browser permissions. Read [REPORT.md](REPORT.md) for the detailed design and tradeoffs.
+
+## Reuse across different applications
+
+The same discovery loop, replay interpreter, action gateway, and handoff controller also run an independent **inventory application**. It has different routes, records, metadata, input names, and output types. Adding it required configuration and a demo app, with no inventory branch in the runner.
+
+```bash
+npm run verify:generalization
+```
+
+This starts its own local servers and needs no credentials. It generates a clearly labeled development artifact, then checks four successful replays (two items × two label variants), one expected `ITEM_NOT_FOUND` outcome, and one expected `AMBIGUOUS_TARGET` failure. Assertions determine the command's exit status. Sanitized evidence is saved under `evidence/generalization/`.
+
+The stock task declares output targets and success/business rules, **but no action controls or action sequence**. The observation exposes native labels/roles and conservative table-neighbor descriptors for unlabeled fields. The decision provider selects observed controls; the recorder saves reusable descriptors rather than changing HTML IDs. Replay resolves these deterministically. Duplicate matches stop; inference does not grant permission to submit an action.
+
+Inventory decisions in this verification are simulated. They prove the integration and replay contract, **not a new genuine AI discovery**. The saved banking runs remain the genuine model evidence.
+
+To watch inventory replay, start Terminal 1:
+
+```bash
+npm run demo:inventory
+```
+
+In Terminal 2:
+
+```bash
+DEMO_URL=http://127.0.0.1:4182 PROFILE_FILE=profiles/inventory-east.json POLICY_FILE=profiles/inventory-policy.json HEADED=1 npm run replay -- capabilities/examples/stock.json '{"item_code":"ITEM-B"}'
+```
+
+For the second variant, use `TENANT=west npm run demo:inventory` and `PROFILE_FILE=profiles/inventory-west.json`. The artifact stays unchanged. An optional genuine inventory discovery uses the same environment settings with `npm run discover -- tasks/stock.json '{"item_code":"ITEM-A"}' capabilities/stock.discovered.json`; this consumes model quota and has not been run for the submitted inventory fixture.
+
+Application profiles declare identity/version markers, authentication blockers and guidance, and explicit target translations. Policies independently permit routes, GET forms, field names, and button/link labels. Profiles contain no executable code or extra workflow steps. Existing banking profiles are normalized at the configuration boundary.
+
+This is configured generalization across supported browser applications. It does not automatically understand arbitrary websites, infer business rules, or operate desktop software. Table-neighbor inference supports simple table rows; layouts outside those structural assumptions require explicit targets or a new resolver.
+
+## Legacy targeting verification
+
+```bash
+npm run verify:targeting
+npm run verify:legacy
+```
+
+The targeting checks use real Chromium without model calls. They cover explicit and wrapping labels, multiple `aria-labelledby` references, placeholders, titles, nested tables, quoted label text, and changing HTML IDs. For an observed control, discovery can save up to four candidate locators; each alternative must resolve uniquely to the same live node before it is recorded. These candidates are only structural alternatives, not proof that all future layouts are equivalent.
+
+A browser test discovers an inventory workflow using simulated decisions, removes the field's accessible label in a second application instance, and replays for another item using the recorded table relationship. A duplicate-field variant stops before filling. A separate test excludes an ambiguous placeholder from the saved alternatives. Replay logs the selected candidate index and match count without field values.
+
+Replay only falls through when a candidate has zero matches. Multiple matches remain an error, even if another candidate could identify one control. Business identity and completion assertions still apply. These heuristics support the implemented text/search fields and navigation controls; they do not add checkbox, dropdown, desktop, or image-only automation.
+
+## Additional layouts and configuration
+
+The automatic verification commands are the easiest way to exercise these variants. To watch them manually, use matching server and replay settings:
+
+| Variant       | Terminal 1                               | Terminal 2                                                                                                                                      |
+| ------------- | ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| Summit        | `PORT=4176 TENANT=summit npm run demo`   | `DEMO_URL=http://127.0.0.1:4176 PROFILE_FILE=profiles/summit.json HEADED=1 npm run replay -- capabilities/savings.json '{"member_id":"67890"}'` |
+| Legacy iframe | `PORT=4177 SCENARIO=legacy npm run demo` | `DEMO_URL=http://127.0.0.1:4177 PROFILE_FILE=profiles/legacy.json HEADED=1 npm run replay -- capabilities/savings.json '{"member_id":"67890"}'` |
+
+Profiles translate known locator slots and enforce tenant/layout markers; they cannot add actions or permissions. The legacy demo includes a named iframe, table layout, and an unlabeled input. Overrides are authored mappings, not automatically discovered portability.
+
+`DEMO_URL` overrides the profile base URL, including when it is set in `.env`. `PROFILE_FILE` selects a tenant profile; `POLICY_FILE` selects a validated deployment policy. Explicit command-line environment assignments override `.env` values. For reproducible reviewer checks, the verification harnesses supply their own configuration and do not need `.env`.
+
+## Troubleshooting
+
+| Symptom                                      | What to do                                                                                                                                              |
+| -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `EADDRINUSE`                                 | Another server owns that port. Stop your old server with Ctrl+C, or choose another `PORT` and use that same port in `DEMO_URL`.                         |
+| Browser executable missing                   | Run `npx playwright install chromium` after `npm ci`.                                                                                                   |
+| Connection refused / `RUN_FAILED` at startup | Confirm the demo is running and `DEMO_URL` matches it; inspect the printed sanitized evidence directory.                                                |
+| Tenant/version mismatch                      | Restart an older demo server after updating code, and match `PROFILE_FILE` to the running variant.                                                      |
+| Resume rejected                              | Complete login and verification in the automated banking window, return to its expected screen, then resume in the dashboard.                           |
+| `INTERVENTION_TIMEOUT`                       | Start a fresh replay and finish the login/resume steps within five minutes.                                                                             |
+| Discovery is silent                          | Requests are paced and the browser is hidden with `HEADED=0`. Wait for `Saved ...` or a failure; avoid duplicate runs.                                  |
+| Model rate limit / HTTP 429                  | Replay and tests remain available without quota. Wait for provider quota recovery; discovery does not enable billing or switch providers automatically. |
+| `verify:legacy` prints a failure             | The ambiguous-target scenario is deliberately rejected. Check the verifier exit status rather than interpreting that one line as a test failure.        |
+
+## Scope and limits
+
+- Three read-only tasks across two fictional applications, with authored tenant/layout variants. Banking discovery is genuine; inventory discovery uses a simulated decision provider. No real banking integration or claim of production scale.
+- Navigation-based clicks and fills; arbitrary single-page interactions, financial writes, desktop control, and general cross-origin/nested-frame support are outside this implementation.
+- Browser requests are restricted by origin/routes; real controls are checked independently of model suggestions. Dispatched clicks are not blindly retried. This is not an OS-level sandbox.
+- Failure evidence includes safe routes, execution phase, target counts/actionability, and structural tags/roles. Raw screenshots, page text, inputs, credentials, and output values are omitted from persisted diagnostics.
+- Discovery observations contain fictional page data. Real regulated data would require additional provider, authorization, and redaction controls.
+- No durable process recovery, distributed workers, formal capability approval service, or model-driven repair during replay.
+
+Tests use simulated model responses and make no live model calls. The CLI integration test loads CLI configuration, including `.env` if present, but runs replay only. The preserved discovery evidence comes from separate genuine model runs.
